@@ -1,4 +1,4 @@
-# Analysis [ **[Download](https://www.mediafire.com/file/jrk5uhkhhs0kk05/AI_Pt-1_Proj.pptx/file)** ]
+# Who, What, Why, Who Project Of The AI Lifecycle [ **[Download](https://www.mediafire.com/file/jrk5uhkhhs0kk05/AI_Pt-1_Proj.pptx/file)** ]
 
 ### 1. WHO (2.5 Marks) – The Stakeholders & Target Users
 - **Primary Users**: Security Operations Center (SOC) Analysts and Incident Responders who are overwhelmed by alert fatigue and need intelligent prioritization of threats.

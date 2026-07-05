@@ -1,20 +1,19 @@
 # Who, What, Why, Who Project Of The AI Lifecycle [ **[Download](https://www.mediafire.com/file/jrk5uhkhhs0kk05/AI_Pt-1_Proj.pptx/file)** ]
 
-### 1. WHO (2.5 Marks) – The Stakeholders & Target Users
+### 1. WHO – The Stakeholders & Target Users
 - **Primary Users**: Security Operations Center (SOC) Analysts and Incident Responders who are overwhelmed by alert fatigue and need intelligent prioritization of threats.
 - **Affected Entities**: **Employees** across all departments whose digital behavior (login times, data access, file transfers) will be monitored to establish a "normal" baseline.
 - **Stakeholders**: The Chief Information Security Officer (CISO) for policy compliance, the IT Infrastructure team who manages the network, and external regulatory bodies (e.g., GDPR, HIPAA) requiring data breach prevention.
 
 ---
 
-### 2. WHAT (2.5 Marks) – The Core Problem & Objective
+### 2. WHAT – The Core Problem & Objective
 - **The Problem**: Traditional firewalls and rule-based Intrusion Detection Systems (IDS) operate on static signatures. They fail to detect **zero-day threats** and subtle **insider threats**, because they cannot distinguish between legitimate admin access and a hacker using stolen credentials moving data laterally across the network.
 - **The AI Objective**: To build an **Unsupervised Anomaly Detection System** that continuously scrapes and ingests massive volumes of raw network logs (syslogs, VPN logs, authentication logs) to learn individual user behavior patterns and flag statistically significant deviations (e.g., a user downloading 10GB at 3 AM from an unfamiliar IP).
 
 ---
 
-### 3. WHERE (5 Marks) – Data Sources & Deployment Scope
-This is worth 5 marks, so be detailed about the *data pipeline and deployment environment*:
+### 3. WHERE – Data Sources & Deployment Scope
 
 - **Data Sources (Where the logs come from)**: 
   - **Perimeter Logs**: Firewalls, Proxy servers, and VPN gateways (ingress/egress traffic).
@@ -25,7 +24,7 @@ This is worth 5 marks, so be detailed about the *data pipeline and deployment en
 
 ---
 
-### 4. WHY (5 Marks) – Justification, Modeling, & Evaluation Parameters
+### 4. WHY – Justification, Modeling, & Evaluation Parameters
 This requires the most detail, covering *why AI* and *how you measure success*:
 
 - **Why AI over Traditional Firewalls**: Firewalls inspect *packet headers* and ports. They cannot read *user intent*. AI is required because the **Volume, Velocity, and Variety** of log data make rule-writing impossible. AI dynamically adapts—if an employee works night shifts for a week, the model updates its baseline, unlike a static rule which would falsely flag them daily.

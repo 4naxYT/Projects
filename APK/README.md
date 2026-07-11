@@ -12,4 +12,5 @@ Includes :
 - No-draw ( For Ball Users )
 - `Input Polling` to make more pixel depth
 - `Error Handling` for Idiotic Inputs
+- State Handling for `No-draw`
 

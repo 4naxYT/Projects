@@ -14,4 +14,5 @@ Includes :
 - `Error Handling` for Idiotic Inputs
 - State Handling for `No-draw`
 - `Tap-draw` for drawing `1Px` eyes / other things
+- Dense Line Creation for continuous drawing
 

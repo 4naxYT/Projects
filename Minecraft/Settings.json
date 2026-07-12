@@ -1,0 +1,8 @@
+{
+    "WORLD_SIZE": 20,
+    "HEIGHT_MIN": 6,
+    "HEIGHT_MAX": 10,
+    "FREQUENCY": 0.5,
+    "CHUNK_SIZE": 10,
+    "SEED": null
+}

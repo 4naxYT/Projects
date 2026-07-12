@@ -13,4 +13,5 @@ Includes :
 - `Input Polling` to make more pixel depth
 - `Error Handling` for Idiotic Inputs
 - State Handling for `No-draw`
+- `Tap-draw` for drawing `1Px` eyes / other things
 

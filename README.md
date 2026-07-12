@@ -9,6 +9,7 @@ This repository is for archival and documentation purposes only.
 
 ```
 School_Projects/
+├── 📂 Independent Project Env/ (contains code with its own deps folder)
 ├── 📂 Dependencies/
 ├── Project Files (the ones you can run)
 └── README.md (this file)

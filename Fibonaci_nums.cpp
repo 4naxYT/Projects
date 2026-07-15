@@ -15,20 +15,21 @@ and knoledge on syntax and working the compiler so uhh js stay away from c++
 #include <cstdlib> // clear screen :D
 #include <list>
 
-std::list<int> fibonacci(int n) {
+std::list<int> fibonacci(int amt) {
     std::list<int> nums;   // listing (finaly)
 
-    if (n <= 0) return nums;
+    if (amt <= 0) return nums;
 
     // first 2 nums
-    if (n >= 1) nums.push_back(0);
-    if (n >= 2) nums.push_back(1);
+    if (amt >= 1) nums.push_back(0);
+    if (amt >= 2) nums.push_back(1);
 
-    // loops and stuff i guess
+    // loops and stuff guess
     int a = 0, b = 1;
-    for (int i = 2; i < n; ++i) {
+    for (int i = 2; i < amt; ++i) {
         int next = a + b;
         nums.push_back(next);
+        
         a = b;
         b = next;
     }

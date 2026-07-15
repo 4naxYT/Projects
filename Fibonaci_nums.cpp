@@ -24,7 +24,7 @@ std::list<int> fibonacci(int n) {
     if (n >= 1) nums.push_back(0);
     if (n >= 2) nums.push_back(1);
 
-    // loops and stuff guess
+    // loops and stuff i guess
     int a = 0, b = 1;
     for (int i = 2; i < n; ++i) {
         int next = a + b;

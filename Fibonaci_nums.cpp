@@ -21,7 +21,6 @@ could use boost multi-precision but it's overkill for ts
 #include <conio.h>
 #include <cstdlib> // clear screen :D
 #include <vector>
-#include <limits>
 #include <string> // str manipulation addons
 #include <algorithm>  // for reverse()
 

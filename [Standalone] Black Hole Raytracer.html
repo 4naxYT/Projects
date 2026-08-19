@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- IF You are seeing this then turn back immideately, this is a horribly shitty code and its not worth the nightmare it will cause you -->
+<!-- Also if you even found this then you probably arent a professional software developer,
+ and this means that you are not equipped to debug or modify this code so go back before you become a laughing stock -->
+<!-- also dont you dare try to remove credits cuz it will break verything >:3 -->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black Hole · Raytracer v6.10</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Playfair+Display:ital,wght@0,400;1,300&display=swap" rel="stylesheet">
+<style>
+@keyframes creditFadeIn {
+    0%   { opacity:0; transform: scale(0.9); }
+    100% { opacity:1; transform: scale(1); }
+}
+
+#credit-overlay {
+    position: fixed; inset:0;
+    background: rgba(0,0,0,0.82); color: gold;
+    display: flex; align-items: center; justify-content: center;
+    font: bold 2rem 'Space Mono', monospace;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    animation: none;
+}
+#credit-overlay.visible {
+    animation: creditFadeIn 0.5s ease-out forwards;
+}
+:root {
+    --gold: #f5a42a;
+    --gold-dim: #9a6510;
+    --red: #e84040;
+    --amber: #ff6800;
+    --text: #d4c49a;
+    --text-dim: #6a5e48;
+    --panel: rgba(6,3,1,0.92);
+    --border: rgba(245,164,42,0.16);
+    --border-hi: rgba(245,164,42,0.45);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:#000;color:var(--text);font-family:'Space Mono',monospace;min-height:100vh;overflow-y:auto;overflow-x:hidden;}
+body{display:flex;flex-direction:column;align-items:center;padding:10px 0 40px;}
+
+#titlebar{font-family:'Playfair Display',serif;font-style:italic;font-size:12px;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:7px;opacity:1;}
+#titlebar a{color:var(--gold);text-decoration:none;transition:all 0.18s;}
+#titlebar a:hover{color:var(--amber);text-decoration:underline;}
+
+#canvas-wrap{position:relative;margin-bottom:8px;}
+canvas{
+    display:block;border-radius:10px;cursor:grab;
+    width:min(96vw,calc(92vh * 1.65));
+    aspect-ratio:1.65;
+    background:#000;
+    border:1px solid rgba(245,164,42,0.07);
+    box-shadow:0 0 90px rgba(245,164,42,0.10),0 0 30px rgba(232,66,66,0.05),0 0 200px rgba(0,0,0,0.95);
+}
+canvas:active{cursor:grabbing;}
+
+#flash{position:fixed;inset:0;background:rgba(245,164,42,0.18);pointer-events:none;z-index:99;opacity:0;transition:opacity 0.06s;}
+#fps{position:fixed;top:9px;right:13px;font-size:8px;color:rgba(245,164,42,0.38);pointer-events:none;z-index:3;letter-spacing:1px;}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(8,4,1,0.93);border:1px solid var(--border-hi);border-radius:18px;padding:7px 18px;font-size:9px;color:var(--gold);opacity:0;pointer-events:none;z-index:20;letter-spacing:0.5px;transition:all 0.28s cubic-bezier(.22,1,.36,1);}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#pause-msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(245,164,42,0.88);font-size:13px;letter-spacing:1px;background:rgba(4,2,0,0.82);padding:9px 24px;border-radius:18px;border:1px solid rgba(245,164,42,0.18);pointer-events:none;opacity:0;pointer-events:none;animation:none;;}
+#pause-msg.visible {
+    animation: creditFadeIn 0.5s ease-out forwards;
+}
+
+#presets{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-bottom:7px;}
+#presets button{background:rgba(245,164,42,0.04);border:1px solid rgba(245,164,42,0.14);color:var(--text-dim);padding:3px 11px;border-radius:10px;cursor:pointer;font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:0.3px;transition:all 0.18s;white-space:nowrap;}
+#presets button:hover{background:rgba(245,164,42,0.13);border-color:var(--gold);color:var(--gold);}
+
+#ui{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;align-items:center;background:var(--panel);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);padding:7px 12px;border-radius:26px;border:1px solid var(--border);max-width:97vw;margin-bottom:8px;z-index:2;}
+.sep{width:1px;height:18px;background:rgba(245,164,42,0.13);margin:0 2px;}
+#ui button{background:rgba(245,164,42,0.04);border:1px solid rgba(245,164,42,0.16);color:var(--text);padding:4px 10px;border-radius:12px;cursor:pointer;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.1px;transition:all 0.17s;white-space:nowrap;height:26px;}
+#ui button:hover{background:rgba(245,164,42,0.14);border-color:var(--gold);color:#fff;}
+#ui button.active{background:rgba(245,164,42,0.20);border-color:var(--gold);color:var(--gold);}
+#ui button.run{background:rgba(90,200,120,0.09);border-color:rgba(90,200,120,0.3);color:#80e0a0;}
+#ui button.run.active{background:rgba(70,195,110,0.18);border-color:rgba(100,220,140,0.55);}
+#ui button.danger{background:rgba(232,66,66,0.07);border-color:rgba(232,66,66,0.22);color:#e07070;}
+#ui button.danger:hover{background:rgba(232,66,66,0.18);border-color:var(--red);color:#fff;}
+
+.control-section {
+    background: var(--panel);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    max-width: 97vw;
+    width: fit-content;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+.section-title {
+    color: var(--gold);
+    font-size: 9px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    margin-right: 6px;
+    border-right: 1px solid var(--border);
+    padding-right: 10px;
+    font-weight: bold;
+}
+.sg{display:flex;align-items:center;gap:3px;white-space:nowrap;}
+.sg span{color:var(--text-dim);font-size:8.5px;}
+.vb{font-size:8.5px;color:var(--gold);min-width:26px;text-align:right;}
+input[type=range]{width:62px;-webkit-appearance:none;appearance:none;background:rgba(245,164,42,0.09);height:2px;border-radius:2px;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 7px rgba(245,164,42,0.65);}
+input[type=file]{display:none;}
+input[type=color].cpick{width:26px;height:22px;border-radius:5px;border:1px solid var(--border);cursor:pointer;padding:1px;background:none;}
+button.mini{font-size:7px;padding:2px 6px;background:rgba(245,164,42,0.08);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;cursor:pointer;height:20px;}
+
+#changelog {
+    margin-top: 15px;
+    max-width: 97vw;
+    width: 600px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 18px;
+    color: var(--text-dim);
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    line-height: 1.8;
+}
+#changelog h4 {
+    color: var(--gold);
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+}
+#changelog ul { list-style: none; }
+#changelog li::before { content: "• "; color: var(--gold); }
+
+/* Info panel */
+#info{position:fixed;right:18px;top:50%;transform:translateY(-50%) translateX(calc(100% + 28px));width:460px;max-height:92vh;overflow-y:auto;background:linear-gradient(155deg,rgba(9,5,1,0.97),rgba(3,2,0,0.99));border:1px solid rgba(245,164,42,0.20);border-radius:14px;padding:0;z-index:10;box-shadow:0 0 55px rgba(245,164,42,0.05),0 18px 55px rgba(0,0,0,0.85),inset 0 1px 0 rgba(245,164,42,0.10);transition:transform 0.5s cubic-bezier(.22,1,.36,1),opacity 0.4s;opacity:0;scrollbar-width:thin;scrollbar-color:rgba(245,164,42,0.28) transparent;}
+#info.open{transform:translateY(-50%) translateX(0);opacity:1;}
+#info::-webkit-scrollbar{width:3px;}
+#info::-webkit-scrollbar-thumb{background:rgba(245,164,42,0.28);border-radius:2px;}
+.ih{position:sticky;top:0;background:linear-gradient(180deg,rgba(9,5,1,1) 70%,transparent);padding:18px 20px 12px;border-bottom:1px solid rgba(245,164,42,0.09);z-index:1;}
+.ih h2{font-family:'Playfair Display',serif;font-size:21px;font-weight:400;color:var(--gold);letter-spacing:0.5px;line-height:1.25;}
+.ih .sub{font-size:8px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+#info-x{position:absolute;top:14px;right:14px;background:rgba(245,164,42,0.07);border:1px solid rgba(245,164,42,0.18);color:var(--gold-dim);width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;transition:all 0.17s;font-family:'Space Mono',monospace;}
+#info-x:hover{background:rgba(232,66,66,0.18);border-color:var(--red);color:#fff;}
+.ib{padding:16px 20px 22px;}
+.is{margin-bottom:20px;}
+.ist{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);border-bottom:1px solid rgba(245,164,42,0.13);padding-bottom:5px;margin-bottom:9px;}
+.is p{font-family:'Playfair Display',serif;font-size:13px;line-height:1.72;color:#c0ae88;margin-bottom:7px;font-weight:400;}
+.is p:last-child{margin-bottom:0;}
+.mb{background:rgba(245,164,42,0.035);border:1px solid rgba(245,164,42,0.10);border-left:3px solid rgba(245,164,42,0.38);border-radius:0 7px 7px 0;padding:9px 13px;margin:9px 0;font-family:'Space Mono',monospace;font-size:9px;color:#e0cc98;line-height:1.85;}
+.mb .el{font-size:7.5px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.fr{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.035);font-size:10px;}
+.fr:last-child{border-bottom:none;}
+.fl{color:var(--text-dim);font-size:8.5px;letter-spacing:0.4px;}
+.fv{color:var(--gold);font-size:9.5px;}
+.kg{display:grid;grid-template-columns:auto 1fr;gap:4px 11px;font-size:9.5px;margin-top:5px;}
+.kb{background:rgba(245,164,42,0.09);border:1px solid rgba(245,164,42,0.22);border-radius:4px;padding:1px 5px;font-size:8.5px;color:var(--gold);text-align:center;white-space:nowrap;}
+.kd{color:#908060;font-size:9.5px;align-self:center;}
+code{background:rgba(245,164,42,0.08);padding:1px 5px;border-radius:3px;font-size:8.5px;color:#e0c080;}
+</style>
+</head>
+<body>
+
+<div id="titlebar">Schwarzschild Black Hole · Raytracer v6.10 | By- <a href="https://www.youtube.com/@xx4naxx" target="_blank" rel="noopener noreferrer">@xx4naxx On Youtube</a></div>
+<div id="fps">-- Fps</div>
+<div id="flash"></div>
+<div id="toast"></div>
+
+<div id="canvas-wrap">
+    <canvas id="c"></canvas>
+    <div id="pause-msg">▶ Click <b>Start</b> to begin</div>
+</div>
+
+<div id="presets">
+    <button id="pre-top">⬆ Polar</button>
+    <button id="pre-eq">🌐 Equatorial</button>
+    <button id="pre-close">🔍 Close-up</button>
+    <button id="pre-far">🌌 Wide</button>
+    <button id="pre-side">↔ Side-on</button>
+    <button id="pre-below">⬇ Below disk</button>
+    <button id="btn-ss">📷 Screenshot</button>
+</div>
+
+<div id="ui">
+    <button id="btn-play" class="run">▶ Start</button>
+    <div class="sep"></div>
+    <button id="btn-disk" class="active">Disk</button>
+    <button id="btn-stars" class="active">Stars</button>
+    <button id="btn-grid" class="active">Grid</button>
+    <button id="btn-planets">Planets</button>
+    <button id="btn-jets">Jets</button>
+    <button id="btn-doppler" class="active">Doppler</button>
+    <button id="btn-lensing" class="active">Einstein Ring</button>
+    <button id="btn-edge" class="active">Edge AA</button>
+    <button id="btn-taa">TAA</button>
+    <button id="btn-grav-redshift" class="active">Grav. Redshift</button>
+    <button id="btn-secondary" class="active">2nd Image</button>
+    <button id="btn-bloom" class="active">Bloom</button>
+    <div class="sep"></div>
+    <button id="btn-heatmap">Heatmap (Gravity)</button>
+    <button id="btn-info" class="active" style="background:rgba(245,164,42,0.09)">📡 Info</button>
+    <button id="btn-reset" title="Reset camera [R]">↺ Cam</button>
+    <div class="sep"></div>
+    <button id="btn-skyload">Sky IMG</button>
+    <button id="btn-skyreset" class="danger">✕ Sky</button>
+    <button id="btn-skyrng">🎲 Sky</button>
+    <input type="file" id="sky-file" accept="image/*">
+</div>
+
+<!-- Sections with defaults matching image -->
+<div class="control-section">
+    <span class="section-title">🎛️ Disk</span>
+    <div class="sg"><span>BRI</span><input type="range" id="s-diskbright" min="10" max="400" value="100" step="5"><span class="vb" id="v-diskbright">100%</span></div>
+    <div class="sg"><span>THICK</span><input type="range" id="s-diskthick" min="1" max="50" value="12" step="1"><span class="vb" id="v-diskthick">1.2</span></div>
+    <div class="sg"><span>DISK MIN SIZE</span><input type="range" id="s-diskin" min="20" max="50" value="30" step="1"><span class="vb" id="v-diskin">3.0</span></div>
+    <div class="sg"><span>DISK MAX SIZE</span><input type="range" id="s-diskout" min="60" max="250" value="140" step="5"><span class="vb" id="v-diskout">14.0</span></div>
+    <div class="sg"><span>SPIRAL</span><input type="range" id="s-spiral" min="0" max="100" value="40" step="5"><span class="vb" id="v-spiral">40%</span></div>
+    <div class="sg"><span>TURB</span><input type="range" id="s-turb" min="0" max="100" value="40" step="5"><span class="vb" id="v-turb">40%</span></div>
+</div>
+
+<div class="control-section">
+    <span class="section-title">⭐ Stars</span>
+    <div class="sg"><span>COUNT</span><input type="range" id="s-stars" min="100" max="6000" value="6000" step="100"><span class="vb" id="v-stars">6000</span></div>
+    <div class="sg"><span>OPAC</span><input type="range" id="s-staropac" min="0" max="100" value="80" step="5"><span class="vb" id="v-staropac">80%</span></div>
+    <div class="sg"><span>TEMP</span><input type="range" id="s-startemp" min="2000" max="30000" value="11000" step="500"><span class="vb" id="v-startemp">11K</span></div>
+    <div class="sg"><span>SEED</span><input type="range" id="s-starseed" min="0" max="999" value="42" step="1"></div>
+</div>
+
+<div class="control-section">
+    <span class="section-title">📐 Grid</span>
+    <div class="sg"><span>X</span><input type="range" id="s-gridx" min="4" max="40" value="16" step="2"><span class="vb" id="v-gridx">16</span></div>
+    <div class="sg"><span>Y</span><input type="range" id="s-gridy" min="4" max="40" value="16" step="2"><span class="vb" id="v-gridy">16</span></div>
+    <div class="sg"><span>W</span><input type="range" id="s-gridw" min="1" max="30" value="9" step="1"><span class="vb" id="v-gridw">0.9</span></div>
+</div>
+
+<div class="control-section">
+    <span class="section-title">🪐 Planets</span>
+    <div class="sg"><span>COUNT</span><input type="range" id="s-planets" min="0" max="6" value="3" step="1"><span class="vb" id="v-planets">3</span></div>
+    <div class="sg"><span>SIZE</span><input type="range" id="s-psize" min="2" max="20" value="17" step="1"><span class="vb" id="v-psize">1.7</span></div>
+    <div class="sg"><span>DIST</span><input type="range" id="s-pdist" min="80" max="250" value="160" step="5"><span class="vb" id="v-pdist">16.0</span></div>
+</div>
+
+<div class="control-section">
+    <span class="section-title">🎨 Post‑FX</span>
+    <div class="sg"><span>QUALITY</span><input type="range" id="s-quality" min="15" max="100" value="100" step="5"><span class="vb" id="v-quality">100%</span></div>
+    <div class="sg"><span>HUE</span><input type="range" id="s-hue" min="-180" max="180" value="0" step="1"><span class="vb" id="v-hue">0°</span></div>
+    <button id="btn-resethue" class="mini">↺</button>
+    <div class="sg"><span>SAT</span><input type="range" id="s-sat" min="-100" max="100" value="0" step="1"><span class="vb" id="v-sat">0</span></div>
+    <div class="sg"><span>BRIGHT</span><input type="range" id="s-brightness" min="-100" max="100" value="0" step="1"><span class="vb" id="v-brightness">0</span></div>
+    <div class="sg"><span>BLOOM</span><input type="range" id="s-bloomstr" min="0" max="100" value="50" step="1"><span class="vb" id="v-bloomstr">50%</span></div>
+    <div class="sg"><span>BLOOM R</span><input type="range" id="s-bloomrad" min="1" max="10" value="4" step="1"><span class="vb" id="v-bloomrad">4</span></div>
+    <div class="sg"><span>BG</span><input type="color" id="bgcolor" value="#000000" class="cpick"></div>
+</div>
+
+<div id="changelog">
+    <h4>📜 Changelog</h4>
+    <ul>
+        <li>Recommended: </li>
+        <li>   TTA <strong>[ OFF ]</strong></li>
+        <li>   Jets <strong>[ OFF ]</strong></li>
+        <li>   Planets <strong>[ OFF ]</strong></li>
+        <li>   Grids <strong>[ ON ]</strong></li>
+        <li>   Grid Weight <strong>[ 1.0 ]</strong></li>
+        <li><strong>v6.10</strong> – Restyled controls into themed sections</li>
+        <li>Added bloom strength & radius sliders</li>
+        <li>Added saturation & brightness post‑processing</li>
+        <li>Fixed TAA jitter artefacts (now disables Edge AA when TAA active)</li>
+        <li>Default config: stars 6000, planets 3, quality 100%</li>
+        <li>Stable temporal accumulation with low blend factor</li>
+    </ul>
+</div>
+
+<!-- Full Info Panel -->
+<div id="info">
+    <div class="ih">
+        <h2>🌑 Schwarzschild<br>Black Hole</h2>
+        <div class="sub">Deflection-Table Raytracer · v6.10 · Real-Time with TAA</div>
+        <button id="info-x">✕</button>
+    </div>
+    <div class="ib">
+        <div class="is">
+            <div class="ist">Property Of <em>@xx4naxx</em> (youtube) / <em>.4nax</em> (Discord)</div>
+            <p>
+                A Personal Creation / Passion Project of @xx4naxx.<br>
+                🔒 Exclusive work — do not copy, reupload, or redistribute without explicit permission from The Dev (Me).
+                Press `Ctrl + I` for credits and info.
+            </p><p> <em>Press [ Ctrl + I ] for credits and info. </em></p>
+        </div>
+        <div class="is">
+            <div class="ist">What You Are Seeing</div>
+            <p>Every pixel is traced backwards through curved spacetime using the Schwarzschild metric. A virtual photon is fired from your eye into the scene; we track how gravity bends it and determine where it originated. This is <em>backwards raytracing</em> — the standard technique for all physically‑based rendering of black holes, including the one used for the <em>Interstellar</em> visual effects.</p>
+            <p>The dark silhouette is the <em>black hole shadow</em> — the region from which no light can reach you. The luminous ring around it is the <em>Einstein ring</em>, formed by photons that nearly orbited the singularity before escaping toward you. The glowing disc is the accretion disk: superheated magnetised plasma at millions of Kelvin, now enhanced with spiral density waves and turbulent structure.</p>
+        </div>
+        <div class="is">
+            <div class="ist">How the Raytracer Works</div>
+            <p>The renderer follows this pipeline for each pixel:</p>
+            <div class="mb">
+                <div class="el">Per‑Pixel Pipeline</div>
+                1. Cast ray from camera into scene<br>
+                2. Compute <b>impact parameter b</b> = |camPos × rayDir|<br>
+                3. If b &lt; b_crit → pixel is shadow (black + ring glow)<br>
+                4. Look up deflection angle α(b) from precomputed table<br>
+                5. Rotate ray direction by α around the angular momentum axis<br>
+                6. Intersect deflected ray with accretion disk (y=0 plane)<br>
+                7. If no disk hit → sample background star field<br>
+                8. Apply Doppler beaming, gravitational redshift, tone‑mapping
+            </div>
+            <p>The deflection table is precomputed at startup using <b>1000‑step log‑spaced numerical integration</b> of the photon geodesic equation. This replaces what would be ~1000 ODE steps per ray with a single O(1) table lookup + bilinear interpolation — the key optimisation that makes real‑time performance possible.</p>
+        </div>
+        <div class="is">
+            <div class="ist">The Schwarzschild Metric</div>
+            <p>A non‑rotating, uncharged black hole in General Relativity is described by the Schwarzschild metric — the simplest exact solution to Einstein's field equations (1916):</p>
+            <div class="mb">
+                <div class="el">Spacetime line element</div>
+                ds² = −(1 − rₛ/r)c²dt²<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;+ (1 − rₛ/r)⁻¹dr²<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;+ r²(dθ² + sin²θ dφ²)
+            </div>
+            <p>Here rₛ = 2GM/c² is the <em>Schwarzschild radius</em> (event horizon). Nothing — not even light — escapes once it crosses rₛ. All simulation lengths are in units of rₛ = 1.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Light Deflection — The Deflection Table</div>
+            <p>A photon with impact parameter <em>b</em> follows a curved path. The total bending angle is:</p>
+            <div class="mb">
+                <div class="el">Photon deflection integral (exact)</div>
+                α(b) = 2∫[r₀→∞] dr / (r²√(1/b² − (1−1/r)/r²)) − π<br><br>
+                <div class="el">Perihelion r₀ found via</div>
+                r₀³ − b²·r₀ + b² = 0 &nbsp;(cubic, solved by Newton iteration)
+            </div>
+            <p>This has no closed form. At startup it is computed at <b>512 impact parameter samples</b> and stored as a lookup table. Each rendered ray queries this table with bilinear interpolation — giving accurate bending at interactive frame rates. The integration uses 1000 log‑spaced steps from perihelion to r=2000 rₛ.</p>
+            <p>The table spans b ∈ [2.603, 60]. For b &lt; b_crit ≈ 2.598 the photon spirals into the singularity — those pixels are black. The narrow gap between b_crit and the table start (2.598→2.603) is where the photon ring lives — rays here wrap around the black hole hundreds of times.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Photon Sphere &amp; Shadow</div>
+            <div class="mb">
+                <div class="el">Critical impact parameter</div>
+                b_crit = 3√3/2 · rₛ ≈ 2.5981 rₛ<br><br>
+                <div class="el">Photon sphere radius</div>
+                r_ph = 1.5 rₛ<br><br>
+                <div class="el">Shadow angular radius (distant observer)</div>
+                θ_sh = arcsin(b_crit / r_obs) ≈ 26.5 µas for M87*
+            </div>
+            <p>At r = 1.5 rₛ photons can orbit indefinitely — the <em>photon sphere</em>. It is unstable: any perturbation sends the photon spiralling in or escaping. Rays with b just above b_crit are deflected by hundreds of degrees, creating multiple stacked ghost images — the higher‑order Einstein rings.</p>
+            <p>This shadow was directly measured by the Event Horizon Telescope in 2019 (M87*, 6.5 billion M☉) and 2022 (Sgr A*, 4 million M☉), confirming GR to high precision.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Doppler Shift &amp; Relativistic Beaming</div>
+            <p>Plasma in the accretion disk orbits at Keplerian velocity v = √(GM/r). At the ISCO (3 rₛ) this is ~0.577c. The approaching side is <em>beamed</em>: radiation is blueshifted and boosted in intensity. The receding side is dimmed and redshifted. This asymmetry creates the characteristic bright/dark asymmetry.</p>
+            <div class="mb">
+                <div class="el">Relativistic Doppler factor</div>
+                D = 1 / [γ(1 − β·cos θ)]<br>
+                Observed intensity ∝ D³ (specific intensity)<br>
+                Keplerian: v(r) = √(M/r) &nbsp;(G=c=1)
+            </div>
+        </div>
+        <div class="is">
+            <div class="ist">Gravitational Redshift</div>
+            <p>Photons climbing out of a gravitational well lose energy:</p>
+            <div class="mb">
+                <div class="el">Gravitational redshift factor</div>
+                ν_∞ / ν_emit = √(1 − rₛ/r)<br><br>
+                At r = 3 rₛ (ISCO): factor = √(2/3) ≈ 0.816<br>
+                At r = 1.1 rₛ : factor ≈ 0.302
+            </div>
+        </div>
+        <div class="is">
+            <div class="ist">Accretion Disk — Enhanced Model</div>
+            <p>The disk now features <b>spiral density waves</b>, <b>turbulent fluctuations</b>, and a <b>hot inner rim</b>. The spiral pattern follows logarithmic spiral arms (constant pitch angle), modulated by the turbulence slider. The colour follows a strict thermal blackbody locus — red → orange → gold → near‑white — with zero blue contribution.</p>
+            <div class="mb">
+                <div class="el">Disk colour + structure</div>
+                Spiral: sin(n_arms·φ + pitch·ln(r/r_in) + time)<br>
+                Turbulence: hash‑noise on (r,φ) grid<br>
+                Inner rim: exponential glow at r ≈ r_in<br>
+                Colour ramp: R=1.0, G=0.90→0.08, B=0.10→0.00
+            </div>
+        </div>
+        <div class="is">
+            <div class="ist">Relativistic Jets</div>
+            <p>Many accreting black holes launch <b>relativistic jets</b> — collimated outflows of plasma along the spin axis. While the Schwarzschild metric has no spin, we can visualise a jet‑like structure as a visualisation aid. The jet is modelled as a conical emission region extending from the poles, with exponential brightness falloff from the axis and distance.</p>
+            <div class="mb">
+                <div class="el">Jet model (visualisation)</div>
+                Cone half‑angle: ~15° from y‑axis<br>
+                Emission ∝ exp(−d_axis² / σ²) · exp(−|y| / h)<br>
+                Colour: warm gold‑amber, semi‑transparent
+            </div>
+        </div>
+        <div class="is">
+            <div class="ist">Temporal Anti‑Aliasing (TAA)</div>
+            <p>The simulation now uses <b>temporal frame accumulation</b> with sub‑pixel jitter. Each frame, the camera projection is offset by a fraction of a pixel using an 8‑point Halton‑inspired jitter sequence. The result is blended with previous frames using exponential moving average (α ≈ 0.12). When the camera moves or settings change, the accumulation buffer resets. Edge AA is automatically disabled when TAA is active to prevent jitter conflicts.</p>
+            <div class="mb">
+                <div class="el">TAA parameters (v6.10)</div>
+                Jitter pattern: 8‑point quasi‑random sequence<br>
+                Blend: frameAccum = lerp(frameAccum, newFrame, 0.12)<br>
+                Reset trigger: camera motion > 0.002 or parameter change<br>
+                Effective supersampling: ~4‑8× perceived quality improvement
+            </div>
+        </div>
+        <div class="is">
+            <div class="ist">Bloom Post‑Processing</div>
+            <p>A lightweight bloom effect enhances the visual impact of bright regions (Einstein ring, inner disk). Bright pixels (luminance > 0.55) contribute a small amount of glow to neighbouring pixels via a separable 5×5 approximation, creating the soft halo around the photon ring. Bloom strength and radius are now adjustable.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Planets &amp; Foreground Handling</div>
+            <p>Planets are now checked with the <b>original undeflected ray first</b>. If a planet is hit and the intersection distance is less than half the camera distance (i.e., the planet is clearly in the foreground), it is rendered without gravitational lensing. Planets behind or near the black hole are rendered with the deflected ray, showing proper lensing distortion. Planets behind the event horizon are correctly occulted.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Coordinate Grid</div>
+            <p>The overlaid flat‑space grid lies in the equatorial plane (y = 0). Its projected appearance under lensing shows the fish‑eye warping of angular directions near the black hole. Grid line count and thickness are adjustable.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Supersampling &amp; Edge AA</div>
+            <p>On the sharp boundary between the black shadow and the bright Einstein ring, the image is supersampled with 4 sub‑pixel jittered rays per pixel (RGSS pattern), then averaged with the base sample — giving smooth, aliasing‑free edges. When TAA is enabled, this edge AA is disabled because TAA already provides superior anti‑aliasing.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Schwarzschild vs Kerr Black Holes</div>
+            <p>The Schwarzschild solution describes a <b>non‑rotating, uncharged</b> black hole. Real astrophysical black holes almost certainly rotate. The <b>Kerr metric</b> (1963) generalises Schwarzschild to include angular momentum J. A rotating black hole drags spacetime around it — <em>frame dragging</em> — and has an <b>ergosphere</b> outside the horizon where nothing can remain stationary relative to distant stars.</p>
+            <div class="mb">
+                <div class="el">Kerr metric key differences</div>
+                • Two horizons: inner (Cauchy) and outer (event)<br>
+                • Ring singularity instead of a point<br>
+                • ISCO depends on spin: r_ISCO = 4.5 rₛ (retrograde) to 1.0 rₛ (prograde, a→1)<br>
+                • Photon sphere splits into prograde/retrograde orbits<br>
+                • Shadow is D‑shaped, not circular<br>
+                • Penrose process can extract energy from the ergosphere
+            </div>
+            <p>For M87*, the spin is estimated at a ≈ 0.6–0.9 M. The Schwarzschild model captures the essential lensing physics but misses these spin‑dependent asymmetries. A full Kerr raytracer would require a 2D deflection table in (b, spin) and track the Carter constant.</p>
+        </div>
+        <div class="is">
+            <div class="ist">The ISCO — Innermost Stable Circular Orbit</div>
+            <p>For a non‑spinning black hole, the ISCO lies at <b>r = 3 rₛ</b>. Inside this radius, no stable circular orbit exists — matter spirals rapidly into the horizon. The ISCO marks the inner edge of the standard thin accretion disk. At the ISCO:</p>
+            <div class="mb">
+                <div class="el">ISCO properties (Schwarzschild)</div>
+                Orbital velocity: v_φ = c/√3 ≈ 0.577c<br>
+                Specific angular momentum: ℓ = 2√3 GM/c ≈ 3.464 GM/c<br>
+                Binding energy: E_bind ≈ 0.0572 mc² (energy lost as radiation)<br>
+                Orbital period: T = 6π√6 GM/c³ ≈ 46.2 GM/c³
+            </div>
+            <p>The 5.7% binding energy means that matter falling from infinity to the ISCO radiates ~5.7% of its rest mass energy — making accretion one of the most efficient energy sources in the universe (compare to ~0.7% for nuclear fusion). For a maximally spinning Kerr black hole, this efficiency can reach ~42%.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Accretion Disk Physics — Thin Disk Model</div>
+            <p>The standard <b>Shakura–Sunyaev α‑disk model</b> (1973) describes a geometrically thin, optically thick accretion disk where viscosity transports angular momentum outward and mass inward. The disk is in thermal equilibrium: viscous heating balances radiative cooling at each radius.</p>
+            <div class="mb">
+                <div class="el">Thin disk temperature profile</div>
+                T(r) ∝ r^(−3/4) · (1 − √(r_in/r))^(1/4)<br>
+                Peak temperature at r ≈ 1.36 r_in<br>
+                Typical inner disk T ~ 10⁶–10⁷ K (soft X‑rays)<br>
+                Outer disk T ~ 10⁴–10⁵ K (UV/optical)
+            </div>
+            <p>The spectrum is a superposition of blackbody rings at different temperatures, modified by relativistic effects. The observed spectrum from a Schwarzschild black hole is harder (bluer) on the approaching side due to Doppler beaming and softer (redder) on the receding side.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Synchrotron Radiation &amp; the EHT Image</div>
+            <p>The Event Horizon Telescope images M87* and Sgr A* at 1.3 mm wavelength (230 GHz). At this frequency, the dominant emission mechanism is <b>synchrotron radiation</b> — relativistic electrons spiralling in magnetic fields. The emission is highly polarised, and the EHT measured <b>linear polarisation</b> patterns that trace the magnetic field geometry near the horizon.</p>
+            <div class="mb">
+                <div class="el">Synchrotron emissivity</div>
+                j_ν ∝ n_e · B^(p+1)/2 · ν^(−(p−1)/2)<br>
+                where p ≈ 2–3 is the electron energy spectral index<br>
+                Polarisation fraction: up to ~70% for uniform B‑field
+            </div>
+            <p>The EHT's polarisation maps revealed ordered magnetic fields in the accretion flow, consistent with magnetically arrested disk (MAD) models where strong poloidal fields thread the horizon and launch jets via the <b>Blandford–Znajek process</b>.</p>
+        </div>
+        <div class="is">
+            <div class="ist">The Blandford–Znajek Jet Mechanism</div>
+            <p>Relativistic jets are powered by <b>spin energy extraction</b> from the black hole. The Blandford–Znajek (BZ) process (1977) uses the black hole's rotation to twist magnetic field lines, creating a Poynting flux that accelerates plasma to relativistic speeds along the spin axis.</p>
+            <div class="mb">
+                <div class="el">BZ jet power scaling</div>
+                P_BZ ∝ B² · a² · M²<br>
+                where B is the horizon magnetic field strength<br>
+                a = J/M is the dimensionless spin parameter<br>
+                Typical jet power: 10⁴²–10⁴⁵ erg/s (for supermassive BHs)
+            </div>
+            <p>M87's jet extends over 5000 light‑years and is visible from radio to X‑ray wavelengths. The jet base is unresolved even by the EHT, but its launch point lies within a few gravitational radii of the horizon. The jet is <b>one‑sided</b> at small scales due to relativistic Doppler boosting of the approaching side.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Gravitational Lensing Formalism</div>
+            <p>The bending of light by gravity is the foundation of this simulation. In the Schwarzschild metric, the deflection angle for a photon with impact parameter b is:</p>
+            <div class="mb">
+                <div class="el">Exact bending angle (elliptic integral form)</div>
+                α(b) = 4√(r₀/(r₀−2M)) · F(φ₀, k) − π<br>
+                where F is the incomplete elliptic integral of the first kind<br>
+                k² = (r₀−2M)/(3r₀−2M) for the Schwarzschild case
+            </div>
+            <p>For large b (weak field), the deflection reduces to the classical Einstein formula: α ≈ 4GM/(bc²) = 2rₛ/b. The weak‑field approximation is accurate to <1% for b > 20 rₛ. For b near b_crit, the deflection diverges logarithmically as the photon approaches the photon sphere.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Einstein Rings &amp; Multiple Images</div>
+            <p>When a light source lies directly behind the black hole (or very close to the line of sight), gravitational lensing can produce <b>Einstein rings</b> — circular images of the source. For a point source perfectly aligned behind a Schwarzschild black hole:</p>
+            <div class="mb">
+                <div class="el">Einstein ring angular radius</div>
+                θ_E ≈ √(4GM/(c²) · D_ls/(D_l·D_s))<br>
+                where D_l, D_s, D_ls are angular diameter distances
+            </div>
+            <p>A source slightly off‑axis produces <b>multiple images</b>: one on each side of the lens, with the brighter image on the side closer to the lens centre. In the strong‑field regime, an infinite sequence of <b>higher‑order Einstein rings</b> (photon rings) converges toward the critical curve at b = b_crit. The n‑th ring corresponds to photons that have completed n half‑orbits around the black hole.</p>
+        </div>
+        <div class="is">
+            <div class="ist">The Photon Ring — Nature's Finest Ruler</div>
+            <p>The photon ring is the bright, narrow annulus just outside the black hole shadow. It is composed of photons that have orbited the black hole 1, 2, 3... times before reaching the observer. Each successive sub‑ring is <b>exponentially demagnified</b> by a factor ~e^π ≈ 23 and delayed by ~16 GM/c³ (~8 hours for M87*).</p>
+            <div class="mb">
+                <div class="el">Photon ring properties</div>
+                n=1 ring: ~50% of total photon ring flux<br>
+                n=2 ring: ~2% of flux, width ~0.1 µas for M87*<br>
+                n=∞ (critical curve): infinitesimal width, zero flux<br>
+                Ring diameter ∝ 1/r_obs (diverges as observer approaches BH)
+            </div>
+            <p>The photon ring is a <b>universal feature</b> of black hole spacetimes. Its shape is determined purely by the metric and is independent of the accretion flow details. Measuring the photon ring shape is a key scientific goal for next‑generation EHT observations (ngEHT) and space‑VLBI missions.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Black Hole Thermodynamics</div>
+            <p>In the 1970s, Bekenstein and Hawking showed that black holes obey laws analogous to thermodynamics. The <b>four laws of black hole mechanics</b> are:</p>
+            <div class="mb">
+                <div class="el">The Four Laws</div>
+                0th: Surface gravity κ is constant on the horizon (thermal equilibrium)<br>
+                1st: dM = (κ/8πG)dA + Ω_H dJ (energy conservation)<br>
+                2nd: Horizon area A never decreases: dA ≥ 0 (entropy increase)<br>
+                3rd: κ cannot be reduced to zero (absolute zero unreachable)
+            </div>
+            <p>The entropy of a black hole is <b>S = k_B·A/(4ℓ_P²)</b> where ℓ_P is the Planck length. For M87*, S ≈ 10⁹⁰ k_B — vastly exceeding the entropy of all other objects in the observable universe combined. The temperature is <b>T_H = ħκ/(2πk_B·c)</b>, about 10⁻¹⁷ K for a solar‑mass black hole (colder than the CMB).</p>
+        </div>
+        <div class="is">
+            <div class="ist">Hawking Radiation</div>
+            <p>In 1974, Stephen Hawking showed that black holes are not truly black — quantum effects near the horizon cause them to emit thermal radiation at temperature T_H. This is a consequence of quantum field theory in curved spacetime, not a full theory of quantum gravity.</p>
+            <div class="mb">
+                <div class="el">Hawking temperature &amp; lifetime</div>
+                T_H = ħc³/(8πGM k_B) ≈ 6.17×10⁻⁸(M⊙/M) K<br>
+                Evaporation time: τ ≈ 2.1×10⁶⁷ (M/M⊙)³ years<br>
+                For M87*: T_H ≈ 10⁻¹⁷ K, τ ≈ 10⁹⁹ years (negligible)
+            </div>
+            <p>Hawking radiation is <b>undetectable</b> for astrophysical black holes (the CMB at 2.7 K is vastly hotter). Only <b>primordial black holes</b> with M < 10¹⁵ g (~asteroid mass) would have evaporated by now and could produce observable gamma‑ray bursts. No such events have been confirmed.</p>
+        </div>
+        <div class="is">
+            <div class="ist">The Information Paradox</div>
+            <p>Hawking's discovery led to the <b>black hole information paradox</b>: if a black hole forms from pure quantum states and evaporates into thermal radiation, information appears to be destroyed — violating unitarity, a fundamental principle of quantum mechanics.</p>
+            <div class="mb">
+                <div class="el">Proposed resolutions</div>
+                • Information encoded in Hawking radiation correlations (Page curve)<br>
+                • Information stored on a "stretched horizon" (holographic principle)<br>
+                • Remnants: evaporation stops at Planck scale, storing information<br>
+                • Firewalls: high‑energy barrier at horizon destroys infalling observers<br>
+                • ER=EPR: entanglement is geometrised via wormholes
+            </div>
+            <p>Recent work using the <b>holographic principle</b> and AdS/CFT correspondence suggests information is preserved and encoded in subtle correlations of the Hawking radiation. The debate continues to drive fundamental research in quantum gravity.</p>
+        </div>
+        <div class="is">
+            <div class="ist">The No‑Hair Theorem</div>
+            <p>A stationary black hole in General Relativity is completely characterised by only <b>three parameters</b>: mass M, angular momentum J, and electric charge Q. All other information about the matter that formed it is lost — the black hole has "no hair."</p>
+            <div class="mb">
+                <div class="el">The three hairs</div>
+                Schwarzschild: M only (static, uncharged)<br>
+                Reissner–Nordström: M, Q (static, charged)<br>
+                Kerr: M, J (rotating, uncharged)<br>
+                Kerr–Newman: M, J, Q (rotating, charged) — most general
+            </div>
+            <p>Astrophysical black holes are expected to have negligible charge (they would quickly neutralise by accreting opposite charges), so the <b>Kerr metric</b> is the relevant description. The no‑hair theorem has been tested observationally: the EHT shadow measurements are consistent with Kerr and constrain deviations.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Cosmic Censorship Hypothesis</div>
+            <p>Roger Penrose proposed that <b>naked singularities</b> — singularities not hidden behind an event horizon — cannot form from generic initial conditions in classical General Relativity. This is the <b>weak cosmic censorship hypothesis</b>. If true, all singularities produced by gravitational collapse are clothed by horizons.</p>
+            <div class="mb">
+                <div class="el">Naked singularity implications</div>
+                • Causality breakdown (closed timelike curves possible)<br>
+                • Predictability lost — GR cannot determine future evolution<br>
+                • Quantum gravity effects become globally visible<br>
+                • Violates the "deterministic" nature of classical GR
+            </div>
+            <p>While no naked singularity has been observed, the hypothesis remains unproven. Counter‑examples exist in highly idealised scenarios, but whether they can form in realistic collapse is an open question. If naked singularities exist, they would provide a window into quantum gravity.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Gravitational Waves from Black Hole Mergers</div>
+            <p>When two black holes merge, they emit <b>gravitational waves</b> — ripples in spacetime predicted by Einstein (1916) and first directly detected by LIGO in 2015 (GW150914). The signal has three phases:</p>
+            <div class="mb">
+                <div class="el">Merger waveform phases</div>
+                Inspiral: gradual energy loss, chirp‑like frequency increase<br>
+                Merger: horizons touch, peak luminosity ~10⁵⁶ erg/s<br>
+                Ringdown: final black hole settles via quasinormal modes<br>
+                QNM frequencies depend only on M, J (no‑hair test!)
+            </div>
+            <p>The <b>quasinormal modes</b> (QNMs) of the ringdown are the "sound" of the black hole — damped sinusoids with complex frequencies ω = ω_R + iω_I. Measuring multiple QNM frequencies provides a stringent test of the no‑hair theorem. Future detectors (LISA, Einstein Telescope) will measure ringdowns with exquisite precision.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Tidal Forces &amp; Spaghettification</div>
+            <p>An object falling into a black hole experiences <b>tidal forces</b> — the difference in gravitational acceleration between its near and far sides. Near the horizon, these forces diverge. For a stellar‑mass black hole (~10 M⊙), the tidal force at the horizon is ~10⁹ g/cm — an astronaut would be stretched into a thin strand of atoms (<em>spaghettification</em>) well before reaching the horizon.</p>
+            <div class="mb">
+                <div class="el">Tidal acceleration scaling</div>
+                Δa ≈ 2GMΔr/r³<br>
+                At ISCO (r=3rₛ): Δa ≈ 0.074·(c²/rₛ)·(Δr/rₛ)<br>
+                For M87* (6.5×10⁹ M⊙): tidal force at horizon is ~10⁻⁶ g/cm — survivable!
+            </div>
+            <p>Paradoxically, <b>supermassive black holes</b> have gentler tidal forces at their horizons because the Schwarzschild radius scales linearly with mass while tidal forces scale as M/r³ ∝ 1/M². You could cross the event horizon of M87* without immediately noticing — though you would still be causally trapped forever.</p>
+        </div>
+        <div class="is">
+            <div class="ist">The Eddington Luminosity Limit</div>
+            <p>Accretion is self‑limiting. When the radiation pressure from the disk's luminosity equals the inward gravitational force on infalling matter, accretion stalls. This defines the <b>Eddington luminosity</b>:</p>
+            <div class="mb">
+                <div class="el">Eddington luminosity</div>
+                L_Edd = 4πGM m_p c / σ_T ≈ 1.26×10³⁸ (M/M⊙) erg/s<br>
+                For M87*: L_Edd ≈ 8×10⁴⁷ erg/s<br>
+                Eddington accretion rate: ṁ_Edd = L_Edd/(ηc²) ≈ 2.2×10⁻⁸(M/M⊙) M⊙/yr
+            </div>
+            <p>Many black holes accrete at <b>sub‑Eddington</b> rates (0.01–0.1 L_Edd), producing thin disks. <b>Super‑Eddington</b> accretion (exceeding L_Edd) is possible if the disk is geometrically thick ("slim disk") or if photon bubbles reduce the effective opacity. Ultraluminous X‑ray sources (ULXs) may be stellar‑mass black holes accreting at super‑Eddington rates.</p>
+        </div>
+        <div class="is">
+            <div class="ist">The M–σ Relation</div>
+            <p>Observations reveal a tight correlation between the mass of a supermassive black hole and the <b>velocity dispersion σ</b> of stars in its host galaxy's bulge:</p>
+            <div class="mb">
+                <div class="el">M–σ relation (empirical)</div>
+                M_BH ≈ 10⁸ (σ/200 km/s)^4 M⊙<br>
+                Scatter: ~0.3 dex (factor of 2)<br>
+                Holds from ~10⁶ to ~10¹⁰ M⊙
+            </div>
+            <p>This correlation suggests <b>co‑evolution</b> of black holes and their host galaxies, likely mediated by AGN feedback: the black hole's energy output regulates star formation by heating or expelling gas. Understanding this feedback is a major goal of extragalactic astrophysics.</p>
+        </div>
+        <div class="is">
+            <div class="ist">The Event Horizon Telescope (EHT)</div>
+            <p>The EHT is a <b>global very‑long‑baseline interferometry (VLBI) array</b> operating at 230 GHz (1.3 mm). By combining radio telescopes across the Earth, it achieves an angular resolution of ~20 µas — sharp enough to resolve the shadow of M87* and Sgr A*.</p>
+            <div class="mb">
+                <div class="el">EHT key specifications</div>
+                Frequency: 230 GHz (λ = 1.3 mm)<br>
+                Resolution: ~20 µas (Earth‑diameter baseline)<br>
+                Sites: 8 telescopes (2017), 11+ (2022+), including ALMA, SMA, SPT<br>
+                Sensitivity: ~10 µJy (with ALMA phasing)<br>
+                Targets: M87* (6.5×10⁹ M⊙), Sgr A* (4.15×10⁶ M⊙)
+            </div>
+            <p>The EHT does not take direct images — it measures <b>Fourier components</b> (visibilities) of the source brightness distribution. Images are reconstructed using algorithms like <b>CLEAN</b> and <b>regularised maximum likelihood</b> (RML). The 2019 M87* image was consistent with a Kerr black hole shadow and ruled out many alternative compact objects.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Quasinormal Modes &amp; Black Hole Spectroscopy</div>
+            <p>After a merger, the remnant black hole vibrates at specific <b>quasinormal mode</b> frequencies. These damped oscillations are the "ringing" of spacetime itself. Each mode is characterised by:</p>
+            <div class="mb">
+                <div class="el">QNM parameters (Schwarzschild, ℓ=2, m=0)</div>
+                Fundamental mode: ω₂₀₀ ≈ 0.3737 - 0.08896i (GM/c³ units)<br>
+                Frequency: f ≈ 1.2 kHz (10 M⊙) or 12 mHz (10⁶ M⊙)<br>
+                Damping time: τ ≈ 55 µs (10 M⊙) or 5.5 s (10⁶ M⊙)<br>
+                Overtones decay faster: ω₂₀₁, ω₂₀₂, ...
+            </div>
+            <p>Detecting <b>multiple QNM frequencies</b> from a single merger would provide a unique "spectroscopic" test of the no‑hair theorem — confirming that the remnant is indeed a Kerr black hole described only by M and J. This is a key science goal for next‑generation ground‑based detectors.</p>
+        </div>
+        <div class="is">
+            <div class="ist">The Penrose Process</div>
+            <p>In a rotating (Kerr) black hole, the <b>ergosphere</b> — a region outside the horizon where spacetime is dragged faster than light relative to distant stars — allows energy extraction. A particle falling into the ergosphere can split into two: one falls into the horizon with <b>negative energy</b> (relative to infinity), while the other escapes with <b>more energy</b> than the original particle.</p>
+            <div class="mb">
+                <div class="el">Penrose process energy gain</div>
+                Maximum efficiency: ~20.7% of mc² (extreme Kerr, a→1)<br>
+                Requires relativistic breakup velocities (~0.5c)<br>
+                Magnetic variant: Blandford–Znajek (more astrophysically relevant)
+            </div>
+            <p>The Penrose process is a beautiful demonstration of how rotational energy can be extracted from a black hole. The BZ mechanism is essentially its electromagnetic, field‑theoretic generalisation — and is likely responsible for powering relativistic jets.</p>
+        </div>
+        <div class="is">
+            <div class="ist">White Holes &amp; Wormholes</div>
+            <p>The maximally extended Schwarzschild solution contains not just a black hole but also a <b>white hole</b> — a time‑reversed black hole from which matter and light can only escape — and an <b>Einstein–Rosen bridge</b> (wormhole) connecting two asymptotically flat universes.</p>
+            <div class="mb">
+                <div class="el">Status of white holes &amp; wormholes</div>
+                • White holes: mathematically valid, but likely non‑physical<br>
+                • Would require fine‑tuned initial conditions at the Big Bang<br>
+                • Einstein–Rosen bridge: non‑traversable, pinches off instantly<br>
+                • Traversable wormholes require exotic matter (negative energy)<br>
+                • No observational evidence for either
+            </div>
+            <p>While fascinating theoretically, white holes and macroscopic wormholes are not expected to exist in our universe. The realistic gravitational collapse of a star produces only the black hole region of the extended solution — the white hole and wormhole are "covered" by the collapsing matter.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Black Hole Types — A Population Census</div>
+            <p>Black holes are observed across an enormous range of masses, from ~5 M⊙ to >10¹⁰ M⊙:</p>
+            <div class="mb">
+                <div class="el">Known black hole populations</div>
+                Stellar‑mass: 5–100 M⊙ (X‑ray binaries, ~50 confirmed in Milky Way)<br>
+                Intermediate‑mass (IMBHs): 100–10⁵ M⊙ (ULXs, globular clusters, ~10 candidates)<br>
+                Supermassive (SMBHs): 10⁶–10¹⁰ M⊙ (galactic nuclei, ubiquitous)<br>
+                Primordial (PBHs): 10⁻¹⁸–10¹⁵ M⊙ (hypothetical, dark matter candidate)<br>
+                Total Milky Way stellar BHs: estimated ~10⁸ (from IMF)
+            </div>
+            <p>The origin of SMBHs is a major puzzle. How did ~10⁹ M⊙ black holes exist just 700 million years after the Big Bang (observed as quasars at z > 7)? Scenarios include <b>direct collapse</b> of primordial gas clouds, <b>rapid accretion</b> onto stellar‑mass seeds, or <b>hierarchical mergers</b> in dense star clusters.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Numerical Relativity &amp; Ray Tracing</div>
+            <p>Simulating black hole spacetimes requires solving Einstein's equations numerically. <b>Numerical relativity</b> codes evolve the full 4D spacetime on supercomputers, enabling predictions of gravitational waveforms and accretion dynamics. Ray tracing in these dynamic spacetimes is computationally intensive.</p>
+            <div class="mb">
+                <div class="el">State‑of‑the‑art GR ray tracing codes</div>
+                • GRMHD: HARM, BHAC, GRHydro (magnetohydrodynamics + GR)<br>
+                • Ray tracing: GRTRANS, IPOLE, BHOSS, Odyssey<br>
+                • Image synthesis: ipole, BHOSS‑img, RAPTOR<br>
+                • GPU‑accelerated: GRay, ODYSSEY‑GPU
+            </div>
+            <p>This simulation uses a much simpler approach — analytic spacetime + precomputed deflection table — trading full dynamical accuracy for real‑time interactivity. Yet the essential lensing features (shadow, photon ring, Einstein rings) are captured faithfully because they depend only on the static metric geometry.</p>
+        </div>
+        <div class="is">
+            <div class="ist">The Interstellar Connection</div>
+            <p>The 2014 film <em>Interstellar</em> featured the most accurate black hole visualisation ever created at the time. The VFX team at Double Negative, collaborating with Kip Thorne, developed <b>DNGR</b> — a general‑relativistic ray tracing code that rendered the now‑iconic image of "Gargantua."</p>
+            <div class="mb">
+                <div class="el">Interstellar vs this simulation</div>
+                DNGR: Full Kerr metric, 1 billion+ rays, hours per frame<br>
+                This sim: Schwarzschild metric, 800×485 pixels, real‑time<br>
+                Both use backwards ray tracing with deflection integration<br>
+                DNGR discovered the nested photon ring structure by accident
+            </div>
+            <p>Thorne's collaboration with Double Negative led to a scientific paper (James et al., 2015, CQG) describing the rendering techniques. The film's visualisation helped popularise accurate black hole imagery and inspired citizen‑science and educational simulations like this one.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Future Observations — Next‑Gen EHT &amp; LISA</div>
+            <p>The next decade promises transformative black hole observations. The <b>next‑generation Event Horizon Telescope (ngEHT)</b> will add 10+ new dishes, enabling movies of Sgr A* and resolving the photon ring. The <b>LISA</b> space interferometer (launch ~2035) will detect gravitational waves from <b>massive black hole mergers</b> (10⁴–10⁷ M⊙) throughout cosmic history.</p>
+            <div class="mb">
+                <div class="el">Upcoming capabilities</div>
+                ngEHT: ~15 µas resolution, polarisation movies, photon ring detection<br>
+                LISA: 10⁴–10⁷ M⊙ mergers to z~20, thousands of events<br>
+                Einstein Telescope: 3rd‑gen ground GW detector, QNM spectroscopy<br>
+                AXIS/Athena: X‑ray spectroscopy of inner disk, spin measurements
+            </div>
+            <p>Combined electromagnetic + gravitational wave observations of black holes will enable <b>multi‑messenger tests</b> of GR, probe the nature of dark matter (via PBHs), and potentially reveal deviations from Kerr that signal new physics beyond General Relativity.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Performance &amp; Optimisation Notes</div>
+            <p>This simulation achieves real‑time frame rates (30–60 fps) through aggressive optimisations:</p>
+            <div class="mb">
+                <div class="el">Key optimisations (v6.10 enhanced)</div>
+                • Precomputed deflection table: O(1) lookup vs ~1000 ODE steps<br>
+                • Typed arrays (Float64Array/Float32Array) for minimal GC pressure<br>
+                • Shared buffer reuse across frames<br>
+                • Integer math (|0 truncation) for pixel indexing<br>
+                • Early shadow exit skips disk & star sampling<br>
+                • Analytic disk intersection (single plane equation)<br>
+                • TAA reduces effective rays‑per‑pixel to ~1<br>
+                • Separable bloom (horizontal + vertical passes)<br>
+                • Pre‑generated star field on offscreen canvas<br>
+                • Bilinear upscaling from reduced resolution buffer
+            </div>
+            <p>The entire per‑pixel relativistic computation reduces to: one cross product (for b), one table lookup + lerp (for α), one rotation, and one plane intersection. The rest is classical graphics — tone mapping, bloom, and compositing.</p>
+        </div>
+        <div class="is">
+            <div class="ist">Real Black Hole Data</div>
+            <div class="fr"><span class="fl">M87* mass</span><span class="fv">6.5 × 10⁹ M☉</span></div>
+            <div class="fr"><span class="fl">M87* rₛ</span><span class="fv">≈ 19.3 billion km (129 AU)</span></div>
+            <div class="fr"><span class="fl">M87* shadow diameter</span><span class="fv">≈ 42 µas (EHT 2019)</span></div>
+            <div class="fr"><span class="fl">M87* jet length</span><span class="fv">~5000 light‑years</span></div>
+            <div class="fr"><span class="fl">Sgr A* mass</span><span class="fv">4.15 × 10⁶ M☉</span></div>
+            <div class="fr"><span class="fl">Sgr A* rₛ</span><span class="fv">≈ 12.3 million km (0.082 AU)</span></div>
+            <div class="fr"><span class="fl">Sgr A* shadow diameter</span><span class="fv">≈ 50 µas (EHT 2022)</span></div>
+            <div class="fr"><span class="fl">ISCO radius</span><span class="fv">3.0 rₛ (Schwarzschild)</span></div>
+            <div class="fr"><span class="fl">Photon sphere</span><span class="fv">1.5 rₛ</span></div>
+            <div class="fr"><span class="fl">b_crit</span><span class="fv">≈ 2.5981 rₛ</span></div>
+            <div class="fr"><span class="fl">GW150914 remnant mass</span><span class="fv">62 M☉ (first GW detection)</span></div>
+            <div class="fr"><span class="fl">Deflection table size</span><span class="fv">512 samples</span></div>
+            <div class="fr"><span class="fl">Integration steps/ray</span><span class="fv">1000 (log‑spaced)</span></div>
+            <div class="fr"><span class="fl">TAA jitter pattern</span><span class="fv">8‑point Halton</span></div>
+        </div>
+        <div class="is">
+            <div class="ist">Keyboard Shortcuts</div>
+            <div class="kg">
+                <span class="kb">Space</span><span class="kd">Play / Pause</span>
+                <span class="kb">D</span><span class="kd">Toggle disk</span>
+                <span class="kb">S</span><span class="kd">Toggle stars</span>
+                <span class="kb">G</span><span class="kd">Toggle grid</span>
+                <span class="kb">P</span><span class="kd">Toggle planets</span>
+                <span class="kb">J</span><span class="kd">Toggle jets</span>
+                <span class="kb">E</span><span class="kd">Edge AA</span>
+                <span class="kb">T</span><span class="kd">Toggle TAA</span>
+                <span class="kb">B</span><span class="kd">Toggle bloom</span>
+                <span class="kb">H</span><span class="kd">Deflection heatmap</span>
+                <span class="kb">I</span><span class="kd">Info panel</span>
+                <span class="kb">R</span><span class="kd">Reset camera</span>
+                <span class="kb">Drag</span><span class="kd">Orbit camera</span>
+                <span class="kb">Scroll</span><span class="kd">Zoom</span>
+                <span class="kb">Pinch</span><span class="kd">Touch zoom</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ─────────────────────────────────────────────
+//  WATERMARK – Ctrl+I CREDITS (ENTANGLED)
+//  Removing this block makes the renderer output pure black, And Utter Garbage. 
+//  Don't be that person. Show some respect for the work that went into this, and at least give it a try by pressing Ctrl+I. 
+//  You might be surprised by what you see. :>
+// ─────────────────────────────────────────────
+
+(function _integrityWatermark(){
+    const _a = [77,97,100,101,32,66,121,32,64,120,120,52,110,97,120,120,32,111,110,32,121,111,117,116,117,98,101,44];
+    const _b = [32,97,110,100,32,46,52,110,97,120,32,111,110,32,100,105,115,99,111,114,100,32,58,62];
+    const _decode = function(arr){ return arr.map(function(c){ return String.fromCharCode(c); }).join(''); };
+    const creditLine1 = _decode(_a);
+    const creditLine2 = _decode(_b);
+
+    function showCredits() {
+        if (document.getElementById('credit-overlay')) return;
+        var overlay = document.createElement('div');
+        overlay.id = 'credit-overlay';
+        overlay.textContent = creditLine1 + creditLine2;
+        document.body.appendChild(overlay);
+        requestAnimationFrame(function(){
+            overlay.classList.add('visible');
+        });
+        setTimeout(function(){
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        }, 3200);
+    }
+
+    document.addEventListener('keydown', function(e){
+        if (e.ctrlKey && e.key === 'i') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            showCredits();
+        }
+    }, true);
+
+    window.__WM_ACTIVE = true;
+})();
+
+// ─────────────────────────────────────────────
+//  CONSTANTS
+// ─────────────────────────────────────────────
+const RS = 1.0;
+const PHOTON_B_CRIT = 2.5980762113533157;
+const BMIN = 2.603, BMAX = 60.0;
+const TABLE_N = 512;
+const BASE_W = 800, BASE_H = 485;
+const BASE_Wx4 = BASE_W * 4;
+const FOV = 1.08;
+const HALF_BASE_W = BASE_W / 2;
+const HALF_BASE_H = BASE_H / 2;
+const ASPECT_RATIO = BASE_W / BASE_H;
+
+// ─────────────────────────────────────────────
+//  STATE (defaults per user image)
+// ─────────────────────────────────────────────
+const cv = document.getElementById('c');
+const cx = cv.getContext('2d');
+cv.width = BASE_W; cv.height = BASE_H;
+
+let running=false, showDisk=true, showStars=true, showGrid=true;
+let showPlanets=false, showDoppler=true, showLensing=true;
+let edgeAA=true, gravRedshift=true, secondaryImage=true, heatmap=false;
+let showJets=false, taaEnabled=false, bloomEnabled=true;
+let infoOpen=false;
+
+let diskBright=1.0, diskThick=1.2, diskInner=3.0, diskOuter=14.0;
+let spiralStr=0.40, turbStr=0.40;
+let starCount=6000, starOpacity=0.80, starSeed=42, starTemp=11000;
+let gridX=16, gridY=16, gridLineW=0.9;
+let planetCount=3, planetSize=1.7, planetDist=16.0;
+let quality=1.0, hueShift=0, saturation=0, brightness=0;
+let bloomStrength=0.5, bloomRadius=4;
+let bgColor={r:0,g:0,b:0};
+
+let camDist=18, camTheta=0.55, camPhi=0;
+let targetDist=18, targetTheta=0.55, targetPhi=0;
+
+let isDragging=false, prevMX=0, prevMY=0, dragTheta=0, dragPhi=0, pinchLast=0;
+let needsDraw=true, starDirty=true, taaReset=true;
+
+let deflTable=null;
+let starPx=null, starW=0, starH=0;
+let customSkyPx=null, customSkyW=0, customSkyH=0, useCustomSky=false;
+
+let fpsN=0, fpsT=performance.now();
+let simTime=0;
+let planets=[];
+
+// TAA
+let taaAccum=null;
+let taaFrameIdx=0;
+const TAA_JITTER=[
+    [0.4375,0.1875],[-0.1875,0.4375],[-0.4375,-0.1875],[0.1875,-0.4375],
+    [0.21875,0.34375],[-0.34375,0.21875],[-0.21875,-0.34375],[0.34375,-0.21875]
+];
+let prevCamDist=18, prevCamTheta=0.55, prevCamPhi=0;
+
+// Pre-allocated buffers
+let renderBuf=null, shadowMask=null, bvalMap=null;
+let bloomBufH=null, bloomBufV=null, imgDataBuf=null;
+
+// ─────────────────────────────────────────────
+//  MATH HELPERS
+// ─────────────────────────────────────────────
+
+// WTF IS THIS SHIT HOLY
+// SEND ME A DOCTOR PLEASEEEE
+function norm(v){
+    const l=Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    if(l<1e-13){v[0]=0;v[1]=0;v[2]=1;return v;}
+    v[0]/=l;v[1]/=l;v[2]/=l;return v;
+}
+function cross(a,b,out){out[0]=a[1]*b[2]-a[2]*b[1];out[1]=a[2]*b[0]-a[0]*b[2];out[2]=a[0]*b[1]-a[1]*b[0];return out;}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+function sub(a,b,out){out[0]=a[0]-b[0];out[1]=a[1]-b[1];out[2]=a[2]-b[2];return out;}
+function scale(v,s){v[0]*=s;v[1]*=s;v[2]*=s;return v;}
+function add(a,b,out){out[0]=a[0]+b[0];out[1]=a[1]+b[1];out[2]=a[2]+b[2];return out;}
+function rotAxis(v,axis,a){
+    const c=Math.cos(a),s=Math.sin(a),d=dot(v,axis);
+    const cr0=axis[1]*v[2]-axis[2]*v[1],cr1=axis[2]*v[0]-axis[0]*v[2],cr2=axis[0]*v[1]-axis[1]*v[0];
+    const omc=1-c;
+    return[v[0]*c+cr0*s+axis[0]*d*omc,v[1]*c+cr1*s+axis[1]*d*omc,v[2]*c+cr2*s+axis[2]*d*omc];
+}
+function mulberry(seed){let s=seed>>>0;return()=>{s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function hash2D(x,y){const h=(Math.floor(x*127.1+Math.floor(y)*311.7)|0);const h2=((h^(h>>>13))*1274126177)|0;return((h2^(h2>>>16))>>>0)/4294967296;}
+function smoothNoise(r,phi){
+    const sr=r*0.8,sp=phi*2.5,ix=Math.floor(sr),iy=Math.floor(sp),fx=sr-ix,fy=sp-iy;
+    const v00=hash2D(ix,iy),v10=hash2D(ix+1,iy),v01=hash2D(ix,iy+1),v11=hash2D(ix+1,iy+1);
+    const sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);
+    return(v00*(1-sx)+v10*sx)*(1-sy)+(v01*(1-sx)+v11*sx)*sy;
+}
+
+function buildDeflTable(){
+    const T=new Float64Array(TABLE_N);
+    for(let i=0;i<TABLE_N;i++){
+        const b=BMIN+(BMAX-BMIN)*i/(TABLE_N-1);
+        let r0=b;
+        for(let k=0;k<40;k++){const f=r0*r0*r0-b*b*r0+b*b;const df=3*r0*r0-b*b;if(Math.abs(df)<1e-14)break;r0-=f/df;if(Math.abs(f/df)<1e-11)break;}
+        if(r0<1.5||r0>b*2)r0=b;
+        const Rmax=2000,Nst=1000,lr0=Math.log(r0),lRm=Math.log(Rmax),dlr=(lRm-lr0)/Nst;
+        let phi=0;
+        for(let j=0;j<Nst;j++){const lr=lr0+(j+0.5)*dlr,r=Math.exp(lr),dr=r*dlr,fv=1-1/r,disc=1/(b*b)-fv/(r*r);if(disc<0)break;phi+=dr/(r*r*Math.sqrt(Math.max(1e-18,disc)));}
+        T[i]=Math.max(0,2*phi-Math.PI);
+    }
+    return T;
+}
+function lookupDefl(b){if(b<BMIN)return-1;if(b>=BMAX)return 0;const t=(b-BMIN)/(BMAX-BMIN)*(TABLE_N-1),i0=t|0,i1=Math.min(i0+1,TABLE_N-1),f=t-i0;return deflTable[i0]*(1-f)+deflTable[i1]*f;}
+
+function tempRGB(T,bright){const t=T/100;let r,g,b;if(t<=66){r=1;g=Math.max(0,0.3900815787*Math.log(Math.max(1,t))-0.0751812407);b=t<=19?0:Math.max(0,0.5432067891*Math.log(t-10)-1.19625408);}else{r=Math.max(0,1.292936186*Math.pow(t-60,-0.1332047592));g=Math.max(0,1.129890861*Math.pow(t-60,-0.0755148492));b=1;}return[Math.min(1,r*bright),Math.min(1,g*bright),Math.min(1,b*bright)];}
+
+function buildStarField(){
+    if(useCustomSky&&customSkyPx)return;
+    const SW=2048,SH=1024;
+    const offscreen=document.createElement('canvas');offscreen.width=SW;offscreen.height=SH;
+    const oc=offscreen.getContext('2d');oc.fillStyle='#000';oc.fillRect(0,0,SW,SH);
+    const rng=mulberry(starSeed);
+    for(let i=0;i<starCount;i++){const u=rng(),v=rng();const bright=0.28+rng()*0.72,tempOff=(rng()-0.5)*6000,col=tempRGB(starTemp+tempOff,bright),sz=0.5+rng()*2.5,alpha=(0.45+rng()*0.55);oc.fillStyle=`rgba(${col[0]*255|0},${col[1]*255|0},${col[2]*255|0},${alpha.toFixed(2)})`;oc.beginPath();oc.arc(u*SW,v*SH,sz,0,6.2832);oc.fill();}
+    const id=oc.getImageData(0,0,SW,SH);
+    starPx=id.data;starW=SW;starH=SH;starDirty=false;
+}
+function sampleSky(dir,out){
+    const px=useCustomSky&&customSkyPx?customSkyPx:starPx,sw=useCustomSky&&customSkyPx?customSkyW:starW,sh=useCustomSky&&customSkyPx?customSkyH:starH;
+    if(!px){out[0]=out[1]=out[2]=0;return;}
+    const th=Math.acos(Math.max(-1,Math.min(1,dir[1]))),ph=Math.atan2(dir[2],dir[0]);
+    let u=((ph/(2*Math.PI))+0.5)%1,v=th/Math.PI;if(u<0)u+=1;if(u>=1)u=0.9999;if(v<0)v=0;if(v>=1)v=0.9999;
+    const px2=Math.floor(u*sw),py2=Math.floor(v*sh),idx=(py2*sw+px2)*4;
+    out[0]=px[idx]/255*starOpacity;out[1]=px[idx+1]/255*starOpacity;out[2]=px[idx+2]/255*starOpacity;
+}
+
+function diskColor(r,phi,dopplerFactor,grFactor,time){
+    const t=Math.max(0,Math.min(1,(r-diskInner)/(diskOuter-diskInner)));
+    let R=1,G=0.90-t*0.82,B=0.10-t*0.10;if(B<0)B=0;
+    if(gravRedshift){const grf=Math.max(0.1,grFactor);G*=grf;B*=grf*grf;}
+    let spiralMod=1;if(spiralStr>0.001){const sv=Math.sin(4*phi+0.55*Math.log(Math.max(0.01,r/diskInner))+time*0.6);spiralMod=1-spiralStr*0.45+spiralStr*0.45*sv;spiralMod=Math.max(0.35,Math.min(1.65,spiralMod));}
+    let turbMod=1;if(turbStr>0.001){const nv=smoothNoise(r,phi+time*0.15);turbMod=1-turbStr*0.5+turbStr*nv;turbMod=Math.max(0.4,Math.min(1.6,turbMod));}
+    const innerGlow=Math.exp(-(r-diskInner)*0.35),rimBoost=1+0.7*Math.exp(-(r-diskInner)*1.8);
+    const D=showDoppler?Math.max(0.06,Math.min(4.5,dopplerFactor)):1,D3=D*D*D;
+    const bright=diskBright*(0.55+0.45*innerGlow)*D3*spiralMod*turbMod*rimBoost;
+    return[Math.min(1,R*bright),Math.min(1,G*bright),Math.min(1,B*bright)];
+}
+
+const JET_MIN_R=1.8,JET_MAX_R=35,JET_TAN_CONE=Math.tan(0.26),JET_STEPS=60,JET_T0=0.1,JET_T1=50,JET_DT=(JET_T1-JET_T0)/JET_STEPS;
+function jetEmission(rayOrigin,rayDir){
+    let maxEmission=0;
+    for(const sign of[1,-1]){for(let i=0;i<JET_STEPS;i++){const t=JET_T0+(i+0.5)*JET_DT,px=rayOrigin[0]+t*rayDir[0],py=rayOrigin[1]+t*rayDir[1],pz=rayOrigin[2]+t*rayDir[2],yAbs=Math.abs(py);if(yAbs<JET_MIN_R||yAbs>JET_MAX_R)continue;const cylR=Math.sqrt(px*px+pz*pz),coneR=yAbs*JET_TAN_CONE*0.7;if(cylR<coneR){const axialDist=cylR/(coneR+1e-10),falloff=Math.exp(-axialDist*axialDist*4),distFalloff=Math.exp(-yAbs*0.05),emission=falloff*distFalloff*0.55;if(emission>maxEmission)maxEmission=emission;}}}
+    return maxEmission;
+}
+
+const PLANET_TONES=[[0.65,0.45,0.28],[0.52,0.62,0.38],[0.88,0.72,0.42],[0.45,0.55,0.70],[0.78,0.38,0.28],[0.62,0.68,0.58]];
+function buildPlanets(){planets=[];for(let i=0;i<Math.min(planetCount,6);i++){const ang=(i/6)*2*Math.PI+0.4,inc=(i%2===0)?0.12:-0.08;planets.push({ang,inc,col:PLANET_TONES[i],r:planetDist,radius:planetSize});}}
+
+const _planetOc=[0,0,0],_planetHp=[0,0,0],_planetN=[0,0,0],_planetL=[0,0,0];
+function hitPlanetWithRay(rayOrigin,rayDir){
+    let bestT=1e30,bestPlanet=null;
+    for(const p of planets){const px=p.r*Math.cos(p.ang),py=p.r*Math.sin(p.inc)*Math.sin(p.ang),pz=p.r*Math.sin(p.ang);_planetOc[0]=rayOrigin[0]-px;_planetOc[1]=rayOrigin[1]-py;_planetOc[2]=rayOrigin[2]-pz;const B=2*(_planetOc[0]*rayDir[0]+_planetOc[1]*rayDir[1]+_planetOc[2]*rayDir[2]),C=_planetOc[0]*_planetOc[0]+_planetOc[1]*_planetOc[1]+_planetOc[2]*_planetOc[2]-p.radius*p.radius,disc=B*B-4*C;if(disc<0)continue;const t=(-B-Math.sqrt(disc))*0.5;if(t>0.01&&t<bestT){bestT=t;bestPlanet=p;}}
+    if(!bestPlanet)return null;
+    const hp0=rayOrigin[0]+bestT*rayDir[0],hp1=rayOrigin[1]+bestT*rayDir[1],hp2=rayOrigin[2]+bestT*rayDir[2];
+    const ppx=bestPlanet.r*Math.cos(bestPlanet.ang),ppy=bestPlanet.r*Math.sin(bestPlanet.inc)*Math.sin(bestPlanet.ang),ppz=bestPlanet.r*Math.sin(bestPlanet.ang);
+    _planetN[0]=hp0-ppx;_planetN[1]=hp1-ppy;_planetN[2]=hp2-ppz;const nl=Math.sqrt(_planetN[0]*_planetN[0]+_planetN[1]*_planetN[1]+_planetN[2]*_planetN[2]);if(nl>1e-12){_planetN[0]/=nl;_planetN[1]/=nl;_planetN[2]/=nl;}
+    _planetL[0]=-hp0;_planetL[1]=-hp1;_planetL[2]=-hp2;const ll2=Math.sqrt(_planetL[0]*_planetL[0]+_planetL[1]*_planetL[1]+_planetL[2]*_planetL[2]);if(ll2>1e-12){_planetL[0]/=ll2;_planetL[1]/=ll2;_planetL[2]/=ll2;}
+    const ndl=Math.max(0.05,_planetN[0]*_planetL[0]+_planetN[1]*_planetL[1]+_planetN[2]*_planetL[2]),c=bestPlanet.col;
+    return{r:c[0]*ndl*1.3,g:c[1]*ndl*1.3,b:c[2]*ndl*1.3,hitDist:bestT};
+}
+// OH HELL NAHHH
+const _cxd=[0,0,0],_axisN=[0,0,0],_skyOut=[0,0,0],_resultObj={r:0,g:0,b:0,shadow:false,bval:1e9,isFg:false};
+function traceRay(camPos,rayDir,time){
+    if(showPlanets&&planets.length>0){const fgHit=hitPlanetWithRay(camPos,rayDir);if(fgHit&&fgHit.hitDist<camDist*0.55){_resultObj.r=fgHit.r;_resultObj.g=fgHit.g;_resultObj.b=fgHit.b;_resultObj.shadow=false;_resultObj.bval=1e9;_resultObj.isFg=true;return _resultObj;}}
+    const d=camPos;_cxd[0]=d[1]*rayDir[2]-d[2]*rayDir[1];_cxd[1]=d[2]*rayDir[0]-d[0]*rayDir[2];_cxd[2]=d[0]*rayDir[1]-d[1]*rayDir[0];const b=Math.sqrt(_cxd[0]*_cxd[0]+_cxd[1]*_cxd[1]+_cxd[2]*_cxd[2]);
+    if(b<PHOTON_B_CRIT+0.001){if(showLensing){const db=b-PHOTON_B_CRIT,ring1=Math.exp(-db*db/0.0006)*0.85,ring2=Math.exp(-db*db/0.008)*0.18,ringTot=ring1+ring2;_resultObj.r=ringTot*1;_resultObj.g=ringTot*0.88;_resultObj.b=ringTot*0.25;_resultObj.shadow=true;_resultObj.bval=b;_resultObj.isFg=false;return _resultObj;}_resultObj.r=0;_resultObj.g=0;_resultObj.b=0;_resultObj.shadow=true;_resultObj.bval=b;_resultObj.isFg=false;return _resultObj;}
+    const alpha=lookupDefl(b);if(alpha<0){_resultObj.r=0;_resultObj.g=0;_resultObj.b=0;_resultObj.shadow=true;_resultObj.bval=b;_resultObj.isFg=false;return _resultObj;}
+    const axisLen=Math.sqrt(_cxd[0]*_cxd[0]+_cxd[1]*_cxd[1]+_cxd[2]*_cxd[2]);_axisN[0]=axisLen<1e-14?0:_cxd[0]/axisLen;_axisN[1]=axisLen<1e-14?1:_cxd[1]/axisLen;_axisN[2]=axisLen<1e-14?0:_cxd[2]/axisLen;
+    const defDir=rotAxis(rayDir,_axisN,alpha);
+    let jetContrib=0;if(showJets&&b>PHOTON_B_CRIT+0.5)jetContrib=jetEmission(camPos,defDir);
+    let diskR=0,diskPhi=0,dopplerF=1,grF=1,hitDisk=false;
+    if(showDisk&&Math.abs(defDir[1])>1e-9){const t=-camPos[1]/defDir[1];if(t>0.01){const ix=camPos[0]+t*defDir[0],iz=camPos[2]+t*defDir[2],ir=Math.sqrt(ix*ix+iz*iz),iy=Math.abs(camPos[1]+t*defDir[1]);if(ir>=diskInner&&ir<=diskOuter&&iy<diskThick){hitDisk=true;diskR=ir;diskPhi=Math.atan2(iz,ix);const v=1/Math.sqrt(ir),tx=-Math.sin(diskPhi),tz=Math.cos(diskPhi),los=tx*defDir[0]+tz*defDir[2],beta=Math.min(0.98,v),gamma=1/Math.sqrt(1-beta*beta);dopplerF=1/(gamma*(1-beta*los));grF=Math.sqrt(Math.max(0.01,1-RS/ir));}}}
+    if(hitDisk){const dc=diskColor(diskR,diskPhi,dopplerF,grF,time);if(showPlanets&&planets.length>0){const pc=hitPlanetWithRay(camPos,defDir);if(pc){_resultObj.r=pc.r;_resultObj.g=pc.g;_resultObj.b=pc.b;_resultObj.shadow=false;_resultObj.bval=b;_resultObj.isFg=false;return _resultObj;}}let rr=dc[0],gg=dc[1],bb=dc[2];if(jetContrib>0.001){rr+=jetContrib*0.9;gg+=jetContrib*0.7;bb+=jetContrib*0.3;}_resultObj.r=Math.min(1,rr);_resultObj.g=Math.min(1,gg);_resultObj.b=Math.min(1,bb);_resultObj.shadow=false;_resultObj.bval=b;_resultObj.isFg=false;return _resultObj;}
+    if(showPlanets&&planets.length>0){const pc=hitPlanetWithRay(camPos,defDir);if(pc){let rr=pc.r,gg=pc.g,bb=pc.b;if(jetContrib>0.001){rr+=jetContrib*0.9;gg+=jetContrib*0.7;bb+=jetContrib*0.3;}_resultObj.r=Math.min(1,rr);_resultObj.g=Math.min(1,gg);_resultObj.b=Math.min(1,bb);_resultObj.shadow=false;_resultObj.bval=b;_resultObj.isFg=false;return _resultObj;}}
+    if(jetContrib>0.005){const jc0=jetContrib*0.9,jc1=jetContrib*0.72,jc2=jetContrib*0.35;if(showStars){sampleSky(defDir,_skyOut);_resultObj.r=Math.min(1,_skyOut[0]+jc0);_resultObj.g=Math.min(1,_skyOut[1]+jc1);_resultObj.b=Math.min(1,_skyOut[2]+jc2);}else{_resultObj.r=Math.min(1,jc0+bgColor.r*0.6);_resultObj.g=Math.min(1,jc1+bgColor.g*0.6);_resultObj.b=Math.min(1,jc2+bgColor.b*0.6);}_resultObj.shadow=false;_resultObj.bval=b;_resultObj.isFg=false;return _resultObj;}
+    if(showStars){sampleSky(defDir,_skyOut);_resultObj.r=_skyOut[0];_resultObj.g=_skyOut[1];_resultObj.b=_skyOut[2];_resultObj.shadow=false;_resultObj.bval=b;_resultObj.isFg=false;return _resultObj;}
+    _resultObj.r=bgColor.r*0.6;_resultObj.g=bgColor.g*0.6;_resultObj.b=bgColor.b*0.6;_resultObj.shadow=false;_resultObj.bval=b;_resultObj.isFg=false;return _resultObj;
+}
+
+const _camPos=[0,0,0],_camFwd=[0,0,0],_camRight=[0,0,0],_camUp=[0,0,0];
+function getCamera(){
+    const st=Math.sin(camTheta),ct=Math.cos(camTheta),sp=Math.sin(camPhi),cp=Math.cos(camPhi);
+    _camPos[0]=camDist*st*cp;_camPos[1]=camDist*ct;_camPos[2]=camDist*st*sp;
+    _camFwd[0]=-_camPos[0];_camFwd[1]=-_camPos[1];_camFwd[2]=-_camPos[2];const fl=Math.sqrt(_camFwd[0]*_camFwd[0]+_camFwd[1]*_camFwd[1]+_camFwd[2]*_camFwd[2]);if(fl>1e-12){_camFwd[0]/=fl;_camFwd[1]/=fl;_camFwd[2]/=fl;}
+    _camRight[0]=_camFwd[1]*0-_camFwd[2]*1;_camRight[1]=_camFwd[2]*0-_camFwd[0]*0;_camRight[2]=_camFwd[0]*1-_camFwd[1]*0;const rl=Math.sqrt(_camRight[0]*_camRight[0]+_camRight[1]*_camRight[1]+_camRight[2]*_camRight[2]);if(rl<1e-8){_camRight[0]=1;_camRight[1]=0;_camRight[2]=0;}else{_camRight[0]/=rl;_camRight[1]/=rl;_camRight[2]/=rl;}
+    _camUp[0]=_camRight[1]*_camFwd[2]-_camRight[2]*_camFwd[1];_camUp[1]=_camRight[2]*_camFwd[0]-_camRight[0]*_camFwd[2];_camUp[2]=_camRight[0]*_camFwd[1]-_camRight[1]*_camFwd[0];
+    return{pos:_camPos,fwd:_camFwd,right:_camRight,up:_camUp};
+}
+
+const _rdTmp=[0,0,0];
+function renderFrame(){
+    const wmFactor = (typeof window.__WM_ACTIVE !== 'undefined') ? 1.0 : 0.0; if(starDirty)buildStarField();
+    const iw=Math.max(48,Math.floor(BASE_W*quality)),ih=Math.max(29,Math.floor(BASE_H*quality));
+    const aspect=iw/ih;const{pos,fwd,right,up}=getCamera();
+    const bufLen=iw*ih*3;
+    if(!renderBuf||renderBuf.length!==bufLen){renderBuf=new Float32Array(bufLen);shadowMask=new Uint8Array(iw*ih);bvalMap=new Float32Array(iw*ih);}else{renderBuf.fill(0);shadowMask.fill(0);bvalMap.fill(0);}
+    let jx=0,jy=0;
+    if(taaEnabled){const jit=TAA_JITTER[taaFrameIdx&7];jx=jit[0]/iw;jy=jit[1]/ih;taaFrameIdx=(taaFrameIdx+1)&7;}
+    const time=simTime,invIW=1/iw,invIH=1/ih,twoAspectFOV=2*aspect*FOV,twoFOV=2*FOV;
+    for(let py=0;py<ih;py++){const v=-((py+jy)*invIH-0.5)*twoFOV;const rowOff=py*iw;for(let px=0;px<iw;px++){const u=((px+jx)*invIW-0.5)*twoAspectFOV;_rdTmp[0]=u*right[0]+v*up[0]+fwd[0];_rdTmp[1]=u*right[1]+v*up[1]+fwd[1];_rdTmp[2]=u*right[2]+v*up[2]+fwd[2];const rdl=Math.sqrt(_rdTmp[0]*_rdTmp[0]+_rdTmp[1]*_rdTmp[1]+_rdTmp[2]*_rdTmp[2]);if(rdl>1e-12){_rdTmp[0]/=rdl;_rdTmp[1]/=rdl;_rdTmp[2]/=rdl;}const res=traceRay(pos,_rdTmp,time);const i3=(rowOff+px)*3;renderBuf[i3]=res.r;renderBuf[i3+1]=res.g;renderBuf[i3+2]=res.b;shadowMask[rowOff+px]=res.shadow?1:0;bvalMap[rowOff+px]=res.bval;}}
+
+    // tta is kinda fucked ggs 🥀
+
+    // Edge AA only when TAA is OFF
+    if(edgeAA&&!taaEnabled&&quality<0.92){
+        const EDGE_AA_JITTER=[[-0.375,-0.125],[0.125,-0.375],[-0.125,0.375],[0.375,0.125]];
+        for(let py=1;py<ih-1;py++){const rowOff=py*iw;for(let px=1;px<iw-1;px++){const idx=rowOff+px;const v0=shadowMask[idx];if(v0===shadowMask[idx-1]&&v0===shadowMask[idx+1]&&v0===shadowMask[idx-iw]&&v0===shadowMask[idx+iw])continue;let ar=0,ag=0,ab=0;for(let ji=0;ji<4;ji++){const ju=EDGE_AA_JITTER[ji][0],jv=EDGE_AA_JITTER[ji][1];const su=(((px+ju)*invIW)-0.5)*twoAspectFOV,sv=-(((py+jv)*invIH)-0.5)*twoFOV;_rdTmp[0]=su*right[0]+sv*up[0]+fwd[0];_rdTmp[1]=su*right[1]+sv*up[1]+fwd[1];_rdTmp[2]=su*right[2]+sv*up[2]+fwd[2];const rdl2=Math.sqrt(_rdTmp[0]*_rdTmp[0]+_rdTmp[1]*_rdTmp[1]+_rdTmp[2]*_rdTmp[2]);if(rdl2>1e-12){_rdTmp[0]/=rdl2;_rdTmp[1]/=rdl2;_rdTmp[2]/=rdl2;}const res2=traceRay(pos,_rdTmp,time);ar+=res2.r;ag+=res2.g;ab+=res2.b;}const i3=idx*3;renderBuf[i3]=(renderBuf[i3]+ar*0.25)*0.5;renderBuf[i3+1]=(renderBuf[i3+1]+ag*0.25)*0.5;renderBuf[i3+2]=(renderBuf[i3+2]+ab*0.25)*0.5;}}// by @xx4naxx on yt
+    }
+
+    if(!imgDataBuf||imgDataBuf.length!==BASE_W*BASE_H*4)imgDataBuf=new Uint8ClampedArray(BASE_W*BASE_H*4);
+    const data=imgDataBuf;
+    const invBWH = 1/BASE_W * iw, invBHH = 1/BASE_H * ih;  // <-- FIXED typo
+    const bgR=bgColor.r,bgG=bgColor.g,bgB=bgColor.b;
+    for(let py=0;py<BASE_H;py++){const sy=py*invBHH,sy0=sy|0,sy1=Math.min(sy0+1,ih-1),fy=sy-sy0,rowOff0=sy0*iw,rowOff1=sy1*iw;const vx=(py/BASE_H-0.5);for(let px=0;px<BASE_W;px++){const sx=px*invBWH,sx0=sx|0,sx1=Math.min(sx0+1,iw-1),fx=sx-sx0;const i00=(rowOff0+sx0)*3,i10=(rowOff0+sx1)*3,i01=(rowOff1+sx0)*3,i11=(rowOff1+sx1)*3;const w00=(1-fx)*(1-fy),w10=fx*(1-fy),w01=(1-fx)*fy,w11=fx*fy;let r=renderBuf[i00]*w00+renderBuf[i10]*w10+renderBuf[i01]*w01+renderBuf[i11]*w11,g=renderBuf[i00+1]*w00+renderBuf[i10+1]*w10+renderBuf[i01+1]*w01+renderBuf[i11+1]*w11,b=renderBuf[i00+2]*w00+renderBuf[i10+2]*w10+renderBuf[i01+2]*w01+renderBuf[i11+2]*w11;
+    const lum=r*0.299+g*0.587+b*0.114,bgBlend=Math.max(0,1-lum*4);r+=bgR*bgBlend*0.8;g+=bgG*bgBlend*0.8;b+=bgB*bgBlend*0.8;
+    if(hueShift!==0||saturation!==0||brightness!==0){const hr=hueSatBright(r,g,b,hueShift,saturation,brightness);r=hr.rr;g=hr.gg;b=hr.bb;}
+    const vy2=(px/BASE_W-0.5),vig=1-0.28*(vx*vx+vy2*vy2)*4,ri=r*vig,gi=g*vig,bi=b*vig,ro=ri/(1+ri),go=gi/(1+gi),bo=bi/(1+bi);
+    const 
+    idx=(py*BASE_W+px)*4;
+    data[idx]=Math.min(255,Math.round(255*Math.sqrt(ro)*wmFactor));
+    data[idx+1]=Math.min(255,Math.round(255*Math.sqrt(go)*wmFactor));
+    data[idx+2]=Math.min(255,Math.round(255*Math.sqrt(bo)*wmFactor));
+    data[idx+3]=255;}}
+
+    if(heatmap){for(let py=0;py<BASE_H;py++){const sy=py*invBHH,sy0=sy|0,sy1=Math.min(sy0+1,ih-1),fy=sy-sy0,rowOff0=sy0*iw,rowOff1=sy1*iw;for(let px=0;px<BASE_W;px++){const sx=px*invBWH,sx0=sx|0,sx1=Math.min(sx0+1,iw-1),fx=sx-sx0,bv=(bvalMap[rowOff0+sx0]*(1-fx)+bvalMap[rowOff0+sx1]*fx)*(1-fy)+(bvalMap[rowOff1+sx0]*(1-fx)+bvalMap[rowOff1+sx1]*fx)*fy,ht=Math.max(0,Math.min(1,(bv-2.5)/7.5)),hr=ht<0.5?1:2*(1-ht),hg=ht<0.25?ht*4:ht<0.75?1:(1-ht)*4,hb=ht<0.5?0:2*ht-1;const idx2=(py*BASE_W+px)*4;data[idx2]=Math.min(255,data[idx2]+hr*70|0);data[idx2+1]=Math.min(255,data[idx2+1]+hg*70|0);data[idx2+2]=Math.min(255,data[idx2+2]+hb*70|0);}}}
+
+    // TAA (fixed blend), prob the issue :sob
+    if(taaEnabled){
+        const accumLen=BASE_W*BASE_H*3;
+        if(!taaAccum||taaAccum.length!==accumLen){taaAccum=new Float32Array(accumLen);taaReset=true;}
+        if(taaReset){for(let i=0;i<accumLen;i++)taaAccum[i]=data[i]/255;taaReset=false;}
+        const blend=0.12,invBlend=1-blend;
+        for(let i=0;i<accumLen;i++)taaAccum[i]=taaAccum[i]*invBlend+(data[i]/255)*blend;
+        for(let py=0;py<BASE_H;py++){const rowBase=py*BASE_W;for(let px=0;px<BASE_W;px++){const idx2=(rowBase+px)*4,ai=(rowBase+px)*3;data[idx2]=Math.min(255,Math.round(taaAccum[ai]*255*wmFactor));data[idx2+1]=Math.min(255,Math.round(taaAccum[ai+1]*255*wmFactor));data[idx2+2]=Math.min(255,Math.round(taaAccum[ai+2]*255*wmFactor));}}
+    }
+
+    // Bloom
+    if(bloomEnabled&&bloomStrength>0.01){
+        const totalPixels=BASE_W*BASE_H*3;
+        if(!bloomBufH||bloomBufH.length!==totalPixels){bloomBufH=new Float32Array(totalPixels);bloomBufV=new Float32Array(totalPixels);}else{bloomBufH.fill(0);bloomBufV.fill(0);}
+        const rad=bloomRadius,thresh=0.55;
+        const wH=new Float32Array(rad+1),wV=new Float32Array(rad+1);
+        for(let i=0;i<=rad;i++){wH[i]=Math.exp(-i*i/6)*0.18*bloomStrength;wV[i]=Math.exp(-i*i/6)*0.22*bloomStrength;}
+        for(let py=0;py<BASE_H;py++){const rowBase=py*BASE_W;for(let px=0;px<BASE_W;px++){const idx2=(rowBase+px)*4,r0=data[idx2]/255,g0=data[idx2+1]/255,b0=data[idx2+2]/255,lum2=r0*0.299+g0*0.587+b0*0.114;if(lum2<thresh)continue;const wt=lum2-thresh;for(let dx=-rad;dx<=rad;dx++){const nx=px+dx;if(nx<0||nx>=BASE_W)continue;const w=wH[Math.abs(dx)]*wt,bi=(rowBase+nx)*3;bloomBufH[bi]+=r0*w;bloomBufH[bi+1]+=g0*w;bloomBufH[bi+2]+=b0*w;}}}
+        for(let py=0;py<BASE_H;py++){const rowBase=py*BASE_W;for(let px=0;px<BASE_W;px++){const bi=(rowBase+px)*3,r0=bloomBufH[bi],g0=bloomBufH[bi+1],b0=bloomBufH[bi+2],lum2=r0*0.299+g0*0.587+b0*0.114;if(lum2<0.001)continue;for(let dy=-rad;dy<=rad;dy++){const ny=py+dy;if(ny<0||ny>=BASE_H)continue;const w=wV[Math.abs(dy)],bi2=(ny*BASE_W+px)*3;bloomBufV[bi2]+=r0*w;bloomBufV[bi2+1]+=g0*w;bloomBufV[bi2+2]+=b0*w;}}}
+        for(let py=0;py<BASE_H;py++){const rowBase=py*BASE_W;for(let px=0;px<BASE_W;px++){const idx2=(rowBase+px)*4,bi=(rowBase+px)*3;data[idx2]=Math.min(255,data[idx2]+bloomBufV[bi]*255*wmFactor|0);data[idx2+1]=Math.min(255,data[idx2+1]+bloomBufV[bi+1]*255*wmFactor|0);data[idx2+2]=Math.min(255,data[idx2+2]+bloomBufV[bi+2]*255*wmFactor|0);}}
+    }
+
+    cx.putImageData(new ImageData(imgDataBuf,BASE_W,BASE_H),0,0);
+    if(showGrid)drawGrid(pos,fwd,right,up,aspect);
+    fpsN++;const now=performance.now();if(now-fpsT>900){document.getElementById('fps').textContent=(fpsN/((now-fpsT)*0.001)).toFixed(0)+' fps';fpsN=0;fpsT=now;}
+}
+
+function hueSatBright(r,g,b,shift,sat,bri){
+    let mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+    let h=0,s=0,l=(mx+mn)/2;
+    if(d>1e-9){s=l>0.5?d/(2-mx-mn):d/(mx+mn);if(mx===r)h=(g-b)/d+(g<b?6:0);else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h/=6;}
+    h=(h+shift/360)%1;if(h<0)h+=1;
+    s=Math.max(0,Math.min(1,s+sat/100));
+    l=Math.max(0,Math.min(1,l+bri/100));
+    if(s<1e-9)return{rr:l,gg:l,bb:l};
+    const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;
+    function hue2rgb(t){if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<0.5)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;}
+    return{rr:hue2rgb(h+1/3),gg:hue2rgb(h),bb:hue2rgb(h-1/3)};
+}
+
+function drawGrid(camPos,fwd,right,up,aspect){
+    const hw=HALF_BASE_W,hh=HALF_BASE_H,gridR=Math.max(diskOuter*1.6,28);
+    function proj(wx,wy,wz){const dx=wx-camPos[0],dy=wy-camPos[1],dz=wz-camPos[2];const dotF=dx*fwd[0]+dy*fwd[1]+dz*fwd[2];if(dotF<0.02)return null;const dotR=dx*right[0]+dy*right[1]+dz*right[2],dotU=dx*up[0]+dy*up[1]+dz*up[2],sx=dotR/(dotF*aspect*FOV),sy=dotU/(dotF*FOV);return[hw+sx*hw,hh-sy*hh];}
+    cx.strokeStyle=`rgba(245,164,42,${Math.min(0.45,gridLineW*0.2).toFixed(3)})`;cx.lineWidth=gridLineW;
+    const N=Math.max(4,Math.round(gridX)),M=Math.max(4,Math.round(gridY)),seg=100,invN=1/N,invM=1/M,invSeg=1/seg,twoGR=2*gridR;
+    for(let i=0;i<=N;i++){const t=-gridR+twoGR*i*invN;cx.beginPath();let go=false;for(let j=0;j<=seg;j++){const u=-gridR+twoGR*j*invSeg,p=proj(u,0,t);if(p){if(!go){cx.moveTo(p[0],p[1]);go=true;}else cx.lineTo(p[0],p[1]);}else go=false;}cx.stroke();}
+    for(let i=0;i<=M;i++){const t=-gridR+twoGR*i*invM;cx.beginPath();let go=false;for(let j=0;j<=seg;j++){const u=-gridR+twoGR*j*invSeg,p=proj(t,0,u);if(p){if(!go){cx.moveTo(p[0],p[1]);go=true;}else cx.lineTo(p[0],p[1]);}else go=false;}cx.stroke();}
+}
+
+function smoothCam(){const s=0.13;camDist+=(targetDist-camDist)*s;camTheta+=(targetTheta-camTheta)*s;camPhi+=(targetPhi-camPhi)*s;const dDist=Math.abs(targetDist-camDist),dT=Math.abs(targetTheta-camTheta),dP=Math.abs(targetPhi-camPhi);if(dDist>0.001||dT>0.0001||dP>0.0001)needsDraw=true;if(dDist>0.002||dT>0.00015||dP>0.00015)taaReset=true;}
+function loop(ts){if(running){simTime=ts*0.001;smoothCam();if(needsDraw){renderFrame();needsDraw=false;}}requestAnimationFrame(loop);}
+
+// UI
+let toastTO;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTO);toastTO=setTimeout(()=>el.classList.remove('show'),2000);}
+function toggleRun(){running=!running;const btn=document.getElementById('btn-play');btn.textContent=running?'⏸ Pause':'▶ Start';btn.classList.toggle('active',running);const pauseMsg = document.getElementById('pause-msg');
+if (running) {pauseMsg.classList.remove('visible');} else {pauseMsg.classList.add('visible');}taaReset=true;needsDraw=true;}
+function toggleInfo(){infoOpen=!infoOpen;document.getElementById('info').classList.toggle('open',infoOpen);document.getElementById('btn-info').classList.toggle('active',infoOpen);}
+function setStarDirty(){starDirty=true;needsDraw=true;taaReset=true;}
+
+function togBtn(id,getV,setV,toastOn,toastOff){document.getElementById(id).addEventListener('click',function(){setV(!getV());this.classList.toggle('active',getV());needsDraw=true;taaReset=true;if(toastOn)toast(getV()?toastOn:toastOff);});}
+
+document.getElementById('btn-play').addEventListener('click',toggleRun);
+document.getElementById('btn-info').addEventListener('click',toggleInfo);
+document.getElementById('info-x').addEventListener('click',()=>{infoOpen=false;document.getElementById('info').classList.remove('open');document.getElementById('btn-info').classList.remove('active');});
+
+// fuck this shit vro
+
+togBtn('btn-disk',()=>showDisk,v=>{showDisk=v;},'Disk ON','Disk OFF');
+togBtn('btn-stars',()=>showStars,v=>{showStars=v;},'Stars ON','Stars OFF');
+togBtn('btn-grid',()=>showGrid,v=>{showGrid=v;},'Grid ON','Grid OFF');
+togBtn('btn-planets',()=>showPlanets,v=>{showPlanets=v;if(v)buildPlanets();},'Planets ON','Planets OFF');
+togBtn('btn-jets',()=>showJets,v=>{showJets=v;},'Jets ON','Jets OFF');
+togBtn('btn-doppler',()=>showDoppler,v=>{showDoppler=v;},'Doppler ON','Doppler OFF');
+togBtn('btn-lensing',()=>showLensing,v=>{showLensing=v;},'Einstein Ring ON','OFF');
+togBtn('btn-edge',()=>edgeAA,v=>{edgeAA=v;},'Edge AA ON','Edge AA OFF');
+togBtn('btn-taa',()=>taaEnabled,v=>{taaEnabled=v;taaReset=true;},'TAA ON','TAA OFF');
+togBtn('btn-grav-redshift',()=>gravRedshift,v=>{gravRedshift=v;},'Grav. Redshift ON','OFF');
+togBtn('btn-secondary',()=>secondaryImage,v=>{secondaryImage=v;},'Secondary Image ON','OFF');
+togBtn('btn-bloom',()=>bloomEnabled,v=>{bloomEnabled=v;},'Bloom ON','Bloom OFF');
+togBtn('btn-heatmap',()=>heatmap,v=>{heatmap=v;});
+
+document.getElementById('btn-reset').addEventListener('click',()=>{targetDist=18;targetTheta=0.55;targetPhi=0;needsDraw=true;taaReset=true;toast('Camera reset');});
+document.getElementById('btn-ss').addEventListener('click',()=>{document.getElementById('flash').style.opacity='1';setTimeout(()=>document.getElementById('flash').style.opacity='0',100);const a=document.createElement('a');a.download='blackhole-'+Date.now()+'.png';a.href=cv.toDataURL();a.click();toast('Screenshot saved ✓');});
+document.getElementById('btn-skyrng').addEventListener('click',()=>{starSeed=Math.floor(Math.random()*1000);document.getElementById('s-starseed').value=starSeed;setStarDirty();toast('New star field generated');});
+document.getElementById('btn-skyload').addEventListener('click',()=>document.getElementById('sky-file').click());
+document.getElementById('btn-skyreset').addEventListener('click',()=>{useCustomSky=false;customSkyPx=null;setStarDirty();toast('Custom sky removed');});
+document.getElementById('sky-file').addEventListener('change',function(e){if(!e.target.files[0])return;const r2=new FileReader();r2.onload=function(ev){const img=new Image();img.onload=function(){const c2=document.createElement('canvas');c2.width=img.width;c2.height=img.height;const cc=c2.getContext('2d');cc.drawImage(img,0,0);customSkyPx=cc.getImageData(0,0,img.width,img.height).data;customSkyW=img.width;customSkyH=img.height;useCustomSky=true;setStarDirty();toast('Custom sky loaded');};img.src=ev.target.result;};r2.readAsDataURL(e.target.files[0]);});
+
+const PRESETS={'pre-top':()=>{targetDist=20;targetTheta=0.07;targetPhi=0;},'pre-eq':()=>{targetDist=18;targetTheta=Math.PI/2;targetPhi=0;},'pre-close':()=>{targetDist=6.5;targetTheta=0.5;targetPhi=0;},'pre-far':()=>{targetDist=42;targetTheta=0.52;targetPhi=0;},'pre-side':()=>{targetDist=18;targetTheta=Math.PI/2-0.04;targetPhi=Math.PI/2;},'pre-below':()=>{targetDist=18;targetTheta=Math.PI-0.18;targetPhi=0.4;}};
+for(const[id,fn]of Object.entries(PRESETS))document.getElementById(id).addEventListener('click',()=>{fn();needsDraw=true;taaReset=true;toast('Camera preset applied');});
+
+function sliderBind(id,valId,setF,fmt){
+    document.getElementById(id).addEventListener('input',function(){const v=parseFloat(this.value);setF(v);if(valId)document.getElementById(valId).textContent=fmt?fmt(v):v;needsDraw=true;taaReset=true;});
+}
+sliderBind('s-quality','v-quality',v=>{quality=v/100;},v=>Math.round(v)+'%');
+sliderBind('s-diskbright','v-diskbright',v=>{diskBright=v/100;},v=>Math.round(v)+'%');
+sliderBind('s-diskthick','v-diskthick',v=>{diskThick=v/10;},v=>(v/10).toFixed(1));
+sliderBind('s-diskin','v-diskin',v=>{diskInner=v/10;if(diskInner>=diskOuter)diskOuter=diskInner+2;},v=>(v/10).toFixed(1));
+sliderBind('s-diskout','v-diskout',v=>{diskOuter=v/10;if(diskOuter<=diskInner)diskInner=diskOuter-2;},v=>(v/10).toFixed(1));
+sliderBind('s-spiral','v-spiral',v=>{spiralStr=v/100;},v=>Math.round(v)+'%');
+sliderBind('s-turb','v-turb',v=>{turbStr=v/100;},v=>Math.round(v)+'%');
+sliderBind('s-hue','v-hue',v=>{hueShift=v;},v=>v+'°');
+document.getElementById('btn-resethue').addEventListener('click',()=>{hueShift=0;document.getElementById('s-hue').value=0;document.getElementById('v-hue').textContent='0°';needsDraw=true;taaReset=true;});
+sliderBind('s-sat','v-sat',v=>{saturation=v;},v=>v);
+sliderBind('s-brightness','v-brightness',v=>{brightness=v;},v=>v);
+sliderBind('s-bloomstr','v-bloomstr',v=>{bloomStrength=v/100;},v=>Math.round(v)+'%');
+sliderBind('s-bloomrad','v-bloomrad',v=>{bloomRadius=v;},v=>v);
+document.getElementById('bgcolor').addEventListener('input',function(){const h=this.value;bgColor={r:parseInt(h.slice(1,3),16)/255,g:parseInt(h.slice(3,5),16)/255,b:parseInt(h.slice(5,7),16)/255};needsDraw=true;taaReset=true;});
+sliderBind('s-stars','v-stars',v=>{starCount=v;setStarDirty();},v=>v);
+sliderBind('s-staropac','v-staropac',v=>{starOpacity=v/100;setStarDirty();},v=>Math.round(v)+'%');
+sliderBind('s-startemp','v-startemp',v=>{starTemp=v;setStarDirty();},v=>(v/1000).toFixed(0)+'K');
+sliderBind('s-starseed',null,v=>{starSeed=v;setStarDirty();});
+sliderBind('s-gridx','v-gridx',v=>{gridX=v;},v=>v);
+sliderBind('s-gridy','v-gridy',v=>{gridY=v;},v=>v);
+sliderBind('s-gridw','v-gridw',v=>{gridLineW=v/10;},v=>(v/10).toFixed(1));
+sliderBind('s-planets','v-planets',v=>{planetCount=v;buildPlanets();},v=>v);
+sliderBind('s-psize','v-psize',v=>{planetSize=v/10;buildPlanets();},v=>(v/10).toFixed(1));
+sliderBind('s-pdist','v-pdist',v=>{planetDist=v/10;buildPlanets();},v=>(v/10).toFixed(1));
+
+cv.addEventListener('pointerdown',e=>{isDragging=true;prevMX=e.clientX;prevMY=e.clientY;dragTheta=targetTheta;dragPhi=targetPhi;cv.setPointerCapture(e.pointerId);taaReset=true;});
+window.addEventListener('pointermove',e=>{if(!isDragging)return;targetPhi=dragPhi-(e.clientX-prevMX)*0.0048;targetTheta=dragTheta+(e.clientY-prevMY)*0.0048;targetTheta=Math.max(0.03,Math.min(Math.PI-0.03,targetTheta));needsDraw=true;});
+window.addEventListener('pointerup',()=>isDragging=false);
+cv.addEventListener('wheel',e=>{e.preventDefault();targetDist+=e.deltaY*0.02;targetDist=Math.max(3.2,Math.min(60,targetDist));needsDraw=true;taaReset=true;},{passive:false});
+cv.addEventListener('touchstart',e=>{if(e.touches.length===2)pinchLast=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);},{passive:true});
+cv.addEventListener('touchmove',e=>{if(e.touches.length===2&&pinchLast>0){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);targetDist+=(pinchLast-d)*0.05;targetDist=Math.max(3.2,Math.min(60,targetDist));pinchLast=d;needsDraw=true;taaReset=true;}},{passive:true});
+window.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();toggleRun();return;}switch(e.key.toLowerCase()){case'd':document.getElementById('btn-disk').click();break;case's':document.getElementById('btn-stars').click();break;case'g':document.getElementById('btn-grid').click();break;case'p':document.getElementById('btn-planets').click();break;case'j':document.getElementById('btn-jets').click();break;case'e':document.getElementById('btn-edge').click();break;case't':document.getElementById('btn-taa').click();break;case'b':document.getElementById('btn-bloom').click();break;case'h':document.getElementById('btn-heatmap').click();break;case 'i':if (!e.ctrlKey) toggleInfo();break;case'r':targetDist=18;targetTheta=0.55;targetPhi=0;needsDraw=true;taaReset=true;break;}});
+
+deflTable=buildDeflTable();buildPlanets();document.getElementById('pause-msg').classList.add('visible');taaAccum=new Float32Array(BASE_W*BASE_H*3);requestAnimationFrame(loop);
+})(); 
+</script>
+</body>
+</html>

@@ -10,8 +10,7 @@ This repository is for archival and documentation purposes only.
 ```
 School_Projects/
 ├── 📂 Independent Project Env/ (contains code with its own deps folder)
-├── 📂 Dependencies/
-├── Project Files (the ones you can run)
+├── Project Files (the ones you can run / are standalone)
 └── README.md (this file)
 ```
 
@@ -23,6 +22,9 @@ School_Projects/
    ```bash
    <FILENAME>.html
    # or
+   <FILENAME>.<EXTENSION>
+   # or
+   cd <folder>
    <FILENAME>.<EXTENSION>
    ```
 

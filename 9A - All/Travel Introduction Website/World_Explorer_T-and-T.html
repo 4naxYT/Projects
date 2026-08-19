@@ -1,0 +1,740 @@
+<html>
+
+<!-- 
+
+Creator: @4nax on yt, [ Class-8th, cbsce + e-techno ] (as of: 2nd,febuary,2026)
+
+
+Info:
+this project is Heavily Influenced by My custom css
+the text are all made to link to relevant pages or function
+the images are all linked to relevant wiki pages
+plese forgive me about the inconsistent spacing im bad at formatting code :(
+
+i also added an error page link to contact us and email and website links as they dont realy have a real link
+
+
+and the websites to credit are:
+- tripadvisor.in
+- wikiwand.com
+- w3schools.com/css
+- geeksforgeeks.org/html
+- stackoverflow.com
+
+-->
+
+<!-- 
+Ver 1.0     - Basic table improvements
+ver 1.1     - Added hover effects  
+Version 1.2 - fixed mobile view
+Version 1.3 - Added rainbow EMI button
+Version 1.4 - Cleaned up CSS
+version 1.5 - added comments for clarity
+version 1.6 - Minor style tweaks
+Version 1.7 - added more comments
+version 1.8 - Final review and polish
+version 1.9 - Added "Created By" link,   DO NOT REMOVE!
+version 2.0 - made the credits area
+-->
+
+
+<head>
+    <title>World Explorer Tours</title>
+
+    <style>
+        /* Page Background */
+        body {
+            margin: 0;
+            max-height: none;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* need to make that damn dark mode whatever\ i dont care ToT */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* cool colors i found on a website */
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+
+        /* Table Styling */
+        table {
+            width: 90%;
+            max-width: 1200px;
+            margin: 50px auto;
+            border-collapse: separate;
+            border-spacing: 0;
+            background-color: #ffffff;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th, td {
+            font-family: 'Times New Roman', Times, serif;
+            border: none;
+            border-bottom: 1px solid #e0e0e0; /* couldnt decide a good color so this it is */
+            padding: 25px 20px;
+            text-align: center;
+            color: #333333;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Rotate text on hover */
+        .rotate-on-hover_r {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .rotate-on-hover_r:hover { transform: rotate(4deg); }
+
+        .rotate-on-hover_l:hover {
+            display: inline-block;
+            transition: transform 0.3s ease;
+            transform: rotate(-4deg);
+        }
+
+        .bigger-on-hover:hover {
+            transition: transform 0.3s ease;
+            display: inline-block;
+            transform: scale(1.15);
+        }
+
+        .main-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff !important; /* Force white cuz cool */
+            font-size: 32px;
+            font-weight: 600;
+            max-height: none;
+            padding: 30px;
+            letter-spacing: 1px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .main-header:hover {
+            transform: scale(1.1);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* i LOOOOOVE shadowssss :3 */
+            cursor: pointer;
+            
+        }
+
+        .credits_link,
+        a .credits_link {
+            color: #ffffff !important;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 2px 5px;
+        }
+
+        /* Hover animation effects - Choose ONE of these: */
+
+        /* Option A: Glow Effect */
+        .credits_link:hover {
+            color: #ffffff !important;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.8),
+                        0 0 15px rgba(255, 255, 255, 0.6),
+                        0 0 20px rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* new color - (Metallic Gray) yay */
+        .sub_header {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            scale: 1.02;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 20px;
+        }
+
+        /* Sub Header TH in Light Mode */
+        .sub_header th {
+            color: #000000 !important; 
+            border-bottom: none !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* shine it */
+        }
+
+        .sub_header:hover {
+            transform: scale(1.03);
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .sub_header th {   border-bottom: none; } 
+
+        /* Hover Effect */
+        tr:hover:not(.main-header):not(.sub_header):not(.footer) {
+            background-color: #f7fafc;
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        td b { /* Not sure why this works but it does DONT TOUCH  >:(  */
+        display: inline-block;
+        position: relative;
+        font-size: 22px;
+        color: #5a67d8;
+        margin-bottom: 10px;
+        font-weight: 600;
+        background-image: linear-gradient(90deg, #667eea, #764ba2);
+        background-size: 0% 3px;
+        background-repeat: no-repeat;
+        background-position: left bottom;
+        transition: background-size 0.4s ease, color 0.3s ease;
+        padding-bottom: 5px;
+        max-height: none;
+        cursor: pointer;
+        }
+
+        tr:hover td b {
+        background-size: 100% 3px;
+        color: #764ba2;
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #282828 0%, #000000 100%);
+            color: #ffffff;
+            font-size: 15px;
+            padding: 25px;
+            border: none;
+        }
+
+        .footer td {
+            color: #ffffff;
+            border: none;
+        }
+
+        .emi {
+        display: inline-block;
+        color: #ffffff;
+        background-color: #f56565;
+        max-height: none;
+        font-weight: 600; 
+        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        margin-top: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        z-index: 1; /* dont know wht this dose but it keeps everything stable so whatever :shrug */
+        }
+
+        /* BACKUP PLAN IF RAINBOW BUTTON DOESNT WORK
+        .emi {
+        display: inline-block;
+            color: #ffffff;
+            background-color: #f56565;
+                max-height: none;
+        font-weight: 600; 
+                font-size: 12px;
+            padding: 5px 12px;
+                border-radius: 20px;
+            margin-top: 8px;
+            text-transform: uppercase;
+        letter-spacing: 0.5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+*/
+
+        .emi:hover {
+        background-color: transparent;
+        transform: scale(1.1);
+            padding: 6px 16px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        }
+
+        .emi:hover::before {
+        content: '';
+        position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        bottom: 0;
+        max-height: none;
+        background: linear-gradient(
+            90deg,
+            #ff0000 0%,
+            #ff9900 20%,
+            #ffff00 40%,
+            #00ff00 60%,
+            #0099ff 80%,
+            #6600ff 100%
+        );
+        border-radius: 20px;
+        z-index: -1;
+            animation: rainbowSlide 3s linear infinite; /*3 sec looked better than 9 sec*/
+        }
+
+        .emi:hover::after {
+        content: '';
+        position: absolute;
+        top: 0;
+            left: -100%;
+        width: 50%;
+        height: 100%;
+            background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.6),
+            transparent
+        );
+        animation: shimmer 0.8s ease;
+        border-radius: 20px;
+        z-index: 0;
+        }
+
+        @keyframes rainbowSlide {
+        0% {
+            background-position: 0% 50%;
+        }
+        100% {
+            background-position: 300% 50%;
+        }
+        }
+
+        @keyframes shimmer {
+        100% {        left: 200%;      }
+        }
+
+        /* testing colors - keep for reference
+        #667eea - nice blue
+        #764ba2 - purple
+        #f56565 - red for emi
+*/
+
+        /* Price Styling */
+        td:nth-child(2) {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        /* Images */
+        img {
+            width: 100%;
+            max-width: 350px;
+            height: 220px;
+        border-radius: 8px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: transform 0.4s ease, border 0.3s ease;
+        }
+
+        img:hover {
+            transform: scale(1.1) rotate(5deg); /* Looks realy cool so i kept it :3 */
+            border: rgb(217, 52, 52) 3px solid;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+            cursor: pointer;
+        }
+
+        .white-link {
+            color: #ffffff !important;
+            text-decoration: none !important;
+            transition: all 0.3s ease;
+        }
+
+        .white-link:hover {
+            color: #e2e8f0;
+            text-decoration: underline !important;
+        }
+        
+        /* Note to self: fix mobile view later */
+
+    </style>
+</head>
+
+<body>
+
+    <table>
+        <!-- Merged Header Row -->
+        <tr>
+            <th colspan="3" class="main-header" >
+                <span class="rotate-on-hover_r">
+                World Explorer Tours & Travels <!-- FAHHHHH -->
+                </span>
+            </th>
+        </tr>
+
+        <!-- Table Column Headers -->
+        <tr class="sub_header">
+            <th>Country & Journey Details</th>
+            <th>Expense Per Person</th>
+            <th>Popular Places</th>
+        </tr>
+
+        <!-- Row 1 -->
+        <tr>
+            <td>
+                <b>France</b><br>
+                Start Date: 10 June 2026<br>
+                Stay: 5 Days / 4 Nights
+            </td>
+            <td>
+                ₹1,20,000<br>
+                <!-- TODO: 
+                    - Fix mobile layout issues
+                    - find a better color scheme
+                    - Check contrast ratio to prevent epilepsy related death
+                    - Test in other random ahh browsers
+            -->
+                <a href="https://www.tripadvisor.in/Tourism-g187070-France-Vacations.html">
+                <span class="emi">EMI Available</span>
+                </a>
+            </td>
+            <td>
+                <a href="https://www.wikiwand.com/en/articles/Eiffel_Tower">
+                <img src="dependencies/paris.jpeg" alt="France">
+                </a>
+            </td>
+        </tr>
+
+        <!-- Row 2 -->
+        <tr>
+            <td>
+                <b>Japan</b><br>
+                Start Date: 25 July 2026<br>
+                Stay: 6 Days / 5 Nights
+            </td>
+            <td>
+                ₹1,50,000<br>
+                <a href="https://www.tripadvisor.in/Tourism-g294232-Japan-Vacations.html">
+                <span class="emi">EMI Available</span>
+                </a>
+            </td>
+            <td>
+                <a href="https://www.wikiwand.com/en/articles/Cherry_blossom">
+                <img src="dependencies/tokyo.jpeg" alt="Japan">
+                </a>
+            </td>
+        </tr>
+
+        <!-- Row 3 -->
+        <tr>
+            <td>
+                <b>Australia</b><br>
+                Start Date: 15 August 2026<br>
+                Stay: 7 Days / 6 Nights
+            </td>
+            <td>
+                ₹1,80,000<br>
+                <a href="https://www.tripadvisor.in/Tourism-g255055-Australia-Vacations.html">
+                <span class="emi">EMI Available</span>
+                </a>
+            </td>
+            <td>
+                <a href="https://www.wikiwand.com/en/articles/Sydney_Opera_House">
+                    <img src="dependencies/sidney.jpeg" alt="Australia">
+                </a>
+            </td>
+        </tr>
+
+        <!-- Footer Row -->
+        <tr>
+            <td class="footer">
+                <a href="error_page.html" class="white-link">
+                    <span class="rotate-on-hover_l">
+                    Contact Us: 98765 43210
+                    </span>
+                </a>
+            </td>
+                <td class="footer" style=" color: #ffffff; ">
+                    <a href="error_page.html" class="white-link">
+                        <span class="bigger-on-hover">
+                        worldexplorer@gmail.com
+                        </span>
+                    </a>
+                    <br>
+                    <a href="https://www.youtube.com/@xx4naxx" class="credits_link" style="font-size: 11px; color: #ffffff !important; text-decoration: none; display: inline-block; transition: all 0.3s ease;"> <p style="color: #ffffff !important; margin: 0; padding: 0;"  >Created By- @xx4naxx</p></a> <!-- I NEED MY CREDITS FOR MY WORK, DO NOT REMOVE -->
+            </td>
+                <td class="footer">
+                    <a href="error_page.html" class="white-link">
+                        <span class="rotate-on-hover_r">
+                        www.worldexplorertours.com
+                        </span>
+                    </a>
+            </td>
+        </tr>
+    </table>
+
+
+
+
+
+
+
+
+<!-- i thought using javascript was better for the dark mode, definitely cooler tho -->
+
+<script>
+// Create and add a the cool dark mode toggle button
+const darkModeToggle = document.createElement('button');
+darkModeToggle.id = 'darkModeToggle';
+darkModeToggle.innerHTML = '🌙 Dark Mode';
+// the dark mode button's css part
+darkModeToggle.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+`;
+
+// Add hover effect for the button, obviously
+darkModeToggle.onmouseenter = function() {
+    this.style.transform = 'scale(1.05)';
+    this.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.3)';
+};
+darkModeToggle.onmouseleave = function() {
+    this.style.transform = 'scale(1)';
+    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+};
+
+// put the button ont he page
+document.body.appendChild(darkModeToggle);
+
+// realy cool persistent system
+const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+let isDarkMode = localStorage.getItem('darkMode') === 'true' || 
+                (localStorage.getItem('darkMode') === null && prefersDarkScheme.matches);
+
+
+// toggles it
+darkModeToggle.addEventListener('click', function() {
+    isDarkMode = !isDarkMode;
+    localStorage.setItem('darkMode', isDarkMode);
+    applyDarkMode();
+});
+
+function applyDarkMode() { // FUNCTIONSSSSS :>
+    const body = document.body;
+    const table = document.querySelector('table');
+    const mainHeader = document.querySelector('.main-header');
+    const mainHeaderSpan = document.querySelector('.main-header .rotate-on-hover_r');
+    const subHeaders = document.querySelectorAll('.sub_header');
+    const footer = document.querySelector('.footer');
+    const cells = document.querySelectorAll('td');
+    const headers = document.querySelectorAll('th');
+    const emiButtons = document.querySelectorAll('.emi');
+    
+    if (isDarkMode) {// this is where it becomes dark
+        darkModeToggle.innerHTML = '☀️ Light Mode';
+        
+        body.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
+        
+        if (table) table.style.backgroundColor = '#0f172a';
+        table.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.5)';
+        
+        if (mainHeader) {
+            mainHeader.style.background = 'linear-gradient(135deg, #4c1d95 0%, #3730a3 100%)';
+        }
+        if (mainHeaderSpan) {
+            mainHeaderSpan.style.color = '#ffffff';
+        }
+        
+
+        subHeaders.forEach(header => {
+            header.style.background = 'linear-gradient(135deg, #3730a3 0%, #4c1d95 100%)';
+            
+
+            const thElements = header.querySelectorAll('th');
+            thElements.forEach(th => {
+                th.style.color = '#e6f7ff !important';
+                th.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.3)';
+            });
+        });
+        
+        cells.forEach(cell => {
+            if (!cell.classList.contains('footer')) {
+                cell.style.color = '#e2e8f0';
+                cell.style.backgroundColor = '#0f172a';
+            }
+        });
+        
+        headers.forEach(header => {
+            if (!header.parentElement.classList.contains('main-header') && 
+                !header.parentElement.classList.contains('sub_header')) {
+                header.style.color = '#e2e8f0';
+            }
+        });
+
+        if (footer) { // FINALY FIXED THE FOOTER OMFG
+            footer.style.background = 'linear-gradient(135deg, #1e1b4b 0%, #2d1065 100%)';
+            footer.style.boxShadow = '0 -5px 20px rgba(0, 0, 0, 0.4)';
+        }
+
+        // And also update the cells inside the footer
+        const footerCells = document.querySelectorAll('.footer td');
+        footerCells.forEach(cell => {
+            cell.style.color = '#e2e8f0';
+        });
+        const style = document.createElement('style');
+        style.id = 'darkModeStyles';
+        style.innerHTML = `
+
+            .footer {
+                background: linear-gradient(135deg, #1e1b4b 0%, #2d1065 100%) !important;
+            }
+            
+            .footer td {
+                color: #e2e8f0 !important;
+            }
+            
+            .footer .white-link {
+                color: #e2e8f0 !important;
+            }
+            
+            .footer .white-link:hover {
+                color: #ffffff !important;
+                text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            }
+            tr:hover:not(.main-header):not(.sub_header):not(.footer) {
+                background-color: #1e293b !important;
+                transform: scale(1.1);
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            }
+            
+            td b {
+                color: #93c5fd !important;
+            }
+            
+            tr:hover td b {
+                background-image: linear-gradient(90deg, #6366f1, #8b5cf6) !important;
+                color: #a78bfa !important;
+            }
+            
+            td:nth-child(2) {
+                color: #f8fafc !important;
+            }
+            
+            /* white it out */
+            .main-header,
+            .main-header * {
+                color: #ffffff !important;
+            }
+            
+            /* YESSS */
+            .sub_header th {
+                color: #e6f7ff !important;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+            }
+        `;
+        
+        const existingStyles = document.getElementById('darkModeStyles');
+        if (existingStyles) existingStyles.remove();
+        
+        document.head.appendChild(style);
+        
+        if (footer) {
+            footer.style.background = 'linear-gradient(135deg, #111827 0%, #030712 100%)';
+        }
+        
+        emiButtons.forEach(btn => {
+            btn.style.backgroundColor = '#dc2626';
+        });
+        
+    } else {// and here i brink back the light
+        darkModeToggle.innerHTML = '🌙 Dark Mode';
+        
+        body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        
+        if (table) table.style.backgroundColor = '#ffffff';
+        table.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.2)';
+        
+        if (mainHeader) {
+            mainHeader.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        }
+        if (mainHeaderSpan) {
+            mainHeaderSpan.style.color = '#ffffff'; 
+        }
+        
+        subHeaders.forEach(header => {
+            header.style.background = 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)';
+            
+            const thElements = header.querySelectorAll('th');
+            thElements.forEach(th => {
+                th.style.color = '#000000 !important';
+                th.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.3)';
+            });
+        });
+        
+        cells.forEach(cell => {
+            if (!cell.classList.contains('footer')) {
+                cell.style.color = '#333333';
+                cell.style.backgroundColor = '#ffffff';
+            }
+        });
+        
+        // kill the headers
+        headers.forEach(header => {
+            if (!header.parentElement.classList.contains('main-header') && 
+                !header.parentElement.classList.contains('sub_header')) {
+                header.style.color = '#333333';
+            }
+        });
+        
+        // Remove dark
+        const darkStyles = document.getElementById('darkModeStyles');
+        if (darkStyles) darkStyles.remove();
+        
+        // Add light
+        const lightStyle = document.createElement('style');
+        lightStyle.id = 'lightModeSubHeader';
+        lightStyle.innerHTML = `
+            .sub_header th {
+                color: #000000 !important;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+            }
+            
+            .main-header,
+            .main-header * {
+                color: #ffffff !important;
+            }
+        `;
+        
+        // remove light
+        const existingLightStyle = document.getElementById('lightModeSubHeader');
+        if (existingLightStyle) existingLightStyle.remove();
+        
+        document.head.appendChild(lightStyle);
+        
+        if (footer) {
+            footer.style.background = 'linear-gradient(135deg, #282828 0%, #000000 100%)';
+        }
+        
+        // reset the emis
+        emiButtons.forEach(btn => {
+            btn.style.backgroundColor = '#f56565';
+        });
+    }
+}
+</script>
+
+</body>
+</html>
+<!-- im gona KYS after this shi, it took SOOOO long vro -->

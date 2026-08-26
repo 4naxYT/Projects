@@ -1,41 +1,82 @@
-# School Projects Repository
+# Projects Repository
 
-🚫 **Disclaimer**: My school life is none of your business.  
-This repository is for archival and documentation purposes only.
+This repository contains a collection of personal, educational, and experimental projects.  
+It serves as an archive and documentation of my work.
 
 ---
 
 ## 📁 Project Structure
 
-```
-School_Projects/
-├── 📂 Independent Project Env/ (contains code with its own deps folder)
-├── Project Files (the ones you can run / are standalone)
-└── README.md (this file)
+```dart
+Projects-main/
+├── 📂 9A - All/
+│   ├── 📂 PPT/
+│   │   ├── 📂 PPT Assets/          (images and media used in presentation)
+│   │   └── README.md
+│   └── 📂 Travel Introduction Website/
+│       ├── 📂 dependencies/        (local images)
+│       ├── error_page.html
+│       ├── World_Explorer_T-and-T.html
+│       └── README.md
+├── 📂 APK/
+│   ├── Drawing_App.apk
+│   └── README.md
+├── 📂 C ++/
+│   ├── 📂 Src/                     (source code)
+│   │   ├── Fibonaci Nums.cpp
+│   │   └── Rand_num.cpp
+│   ├── Fibonaci.exe
+│   ├── Random Number Guesser.exe
+│   └── (required DLLs)
+├── 📂 Minecraft/
+│   ├── 📂 Assets/
+│   │   ├── 📂 Full Res/            (original high‑res textures)
+│   │   ├── 📂 Quality Reduced/     (compressed textures)
+│   │   └── (other asset files)      (Currently Used Files) - Insert any image of same extention and name to swap textures
+│   ├── Install Deps.bat
+│   ├── Minecraft.py
+│   ├── requirements.txt
+│   ├── Settings.json
+│   └── tempCodeRunnerFile.py
+├── 📂 Py/
+│   ├── 📂 Rblx/
+│   │   └── Account Login Tracker.py
+│   │   └── OnlineLogs [< UID >].txt (Dynamicly Generated for every player you track)
+│   ├── Bill Calculator.py
+│   ├── Calc.py
+│   ├── Deps Installer.py
+│   ├── Info Grabber.py
+│   └── README.md
+├── [Standalone] Black Hole Raytracer.html
+└── README.md
 ```
 
 ---
 
 ## ⚙️ Usage
 
-1. Run:
-   ```bash
-   <FILENAME>.html
-   # or
-   <FILENAME>.<EXTENSION>
-   # or
-   cd <folder>
-   <FILENAME>.<EXTENSION>
-   ```
+1. **Standalone files** (`.html`, `.exe`, `.apk`):  
+   Run directly by double‑clicking or executing in the appropriate environment.
+
+2. **Python scripts**:  
+   Install dependencies (if any) using `pip install -r requirements.txt` or run the provided `Install Deps.bat` / `Deps Installer.py`.  
+   Execute with `python <filename>.py`.
+
+3. **C++ executables**:  
+   Ensure the required `.dll` files are in the same folder as the `.exe`.  
+   Source code is available in `C ++/Src/` for compilation if needed.
+
+4. **Web projects**:  
+   Open the main `.html` file in a browser; ensure the `dependencies/` folder is kept alongside.
 
 ---
 
 ## 📝 Notes
 
 - This repository is **not** for collaboration.
-- Code may be messy, incomplete, or poorly documented — it's for school.
-- Do not judge my coding style or project quality.
-- Due to this being my **personal archive**, I would not like to divulge *personal* info
+- Code may be messy, incomplete, or poorly documented — it reflects my learning process and personal experimentation.
+- Some folders contain their own README files — read them for specific details.
+- Please do not judge the quality or style; these projects are shared for reference only.
 
 ---
 
@@ -50,7 +91,7 @@ If you are a **student**:
 
 ## 📬 Contact
 
-I will only answer questions about these projects through IRL(Real Life) interactions.  
+I will only answer questions about these projects through IRL (Real Life) interactions.  
 This repository is documentation, not a help desk.
 
 ---
@@ -63,5 +104,4 @@ This repository is documentation, not a help desk.
 ---
 > *Use The Projects **Ethically**, **Never Plagiarise**, Or **Steal** Others' Content, And Properly **Credit** Them*
 
-> By `Prianshu .B`, **Narayana** Rishra 9A (as of `2/5/26` d/m/y)
----
+> By `Prianshu .B`, **Narayana** Rishra 9A (as of `26/8/26` d/m/y)

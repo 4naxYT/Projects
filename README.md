@@ -5,6 +5,10 @@ It serves as an archive and documentation of my work.
 
 ---
 
+## 📁 [Project Structure](README2.md)
+
+---
+
 ## ⚙️ Usage
 
 1. **Standalone files** (`.html`, `.exe`, `.apk`):  
